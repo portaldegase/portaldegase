@@ -108,3 +108,11 @@
 - [x] Contributors só podem editar notícias de sua categoria
 - [x] Apenas admin pode postar em todas as categorias
 - [x] Página de gerenciamento de contribuidores (admin)
+
+## Histórico de Edições
+- [x] Tabelas de histórico para posts e pages no banco de dados
+- [x] Funções de criação e gerenciamento de versões
+- [x] Endpoints tRPC para listar e reverter versões
+- [x] Componentes UI para visualizar histórico
+- [x] Modal de visualização de versões
+- [x] Testes do sistema de histórico (38 testes passando)

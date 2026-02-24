@@ -12,6 +12,8 @@ import {
   transparencyItems, InsertTransparencyItem,
   units, InsertUnit,
   siteConfig, InsertSiteConfig,
+  postHistory, InsertPostHistory,
+  pageHistory, InsertPageHistory,
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -211,6 +213,13 @@ export async function getPageBySlug(slug: string) {
   return result[0];
 }
 
+export async function getPageById(id: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(pages).where(eq(pages.id, id)).limit(1);
+  return result[0];
+}
+
 export async function createPage(data: InsertPage) {
   const db = await getDb();
   if (!db) throw new Error("DB not available");
@@ -395,4 +404,159 @@ export async function deleteUser(id: number) {
   const db = await getDb();
   if (!db) throw new Error("DB not available");
   await db.delete(users).where(eq(users.id, id));
+}
+
+
+// ===== POST HISTORY FUNCTIONS =====
+
+export async function createPostHistory(
+  postId: number,
+  post: InsertPostHistory & { postId?: never }
+): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db.insert(postHistory).values({
+    ...post,
+    postId,
+  });
+}
+
+export async function getPostHistory(postId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  return await db
+    .select()
+    .from(postHistory)
+    .where(eq(postHistory.postId, postId))
+    .orderBy(desc(postHistory.createdAt));
+}
+
+export async function getPostHistoryById(historyId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const result = await db
+    .select()
+    .from(postHistory)
+    .where(eq(postHistory.id, historyId))
+    .limit(1);
+
+  return result[0];
+}
+
+export async function revertPostToVersion(postId: number, historyId: number, editorId?: number): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  // Get the version to revert to
+  const version = await getPostHistoryById(historyId);
+  if (!version || version.postId !== postId) {
+    throw new Error("Version not found");
+  }
+
+  // Create a new history entry before reverting (backup current state)
+  const currentPost = await getPostById(postId);
+  if (currentPost) {
+    await createPostHistory(postId, {
+      title: currentPost.title,
+      excerpt: currentPost.excerpt,
+      content: currentPost.content,
+      featuredImage: currentPost.featuredImage,
+      status: currentPost.status,
+      isFeatured: currentPost.isFeatured,
+      editorId,
+      changeDescription: `Revertido para versão de ${version.createdAt.toLocaleDateString("pt-BR")}`,
+    });
+  }
+
+  // Revert the post to the selected version
+  await db.update(posts).set({
+    title: version.title,
+    excerpt: version.excerpt,
+    content: version.content,
+    featuredImage: version.featuredImage,
+    status: version.status,
+    isFeatured: version.isFeatured,
+    updatedAt: new Date(),
+  }).where(eq(posts.id, postId));
+}
+
+// ===== PAGE HISTORY FUNCTIONS =====
+
+export async function createPageHistory(
+  pageId: number,
+  page: InsertPageHistory & { pageId?: never }
+): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db.insert(pageHistory).values({
+    ...page,
+    pageId,
+  });
+}
+
+export async function getPageHistory(pageId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  return await db
+    .select()
+    .from(pageHistory)
+    .where(eq(pageHistory.pageId, pageId))
+    .orderBy(desc(pageHistory.createdAt));
+}
+
+export async function getPageHistoryById(historyId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const result = await db
+    .select()
+    .from(pageHistory)
+    .where(eq(pageHistory.id, historyId))
+    .limit(1);
+
+  return result[0];
+}
+
+export async function revertPageToVersion(pageId: number, historyId: number, editorId?: number): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  // Get the version to revert to
+  const version = await getPageHistoryById(historyId);
+  if (!version || version.pageId !== pageId) {
+    throw new Error("Version not found");
+  }
+
+  // Create a new history entry before reverting (backup current state)
+  const currentPage = await getPageById(pageId);
+  if (currentPage) {
+    await createPageHistory(pageId, {
+      title: currentPage.title,
+      content: currentPage.content,
+      excerpt: currentPage.excerpt,
+      featuredImage: currentPage.featuredImage,
+      status: currentPage.status,
+      menuLabel: currentPage.menuLabel,
+      showInMenu: currentPage.showInMenu,
+      editorId,
+      changeDescription: `Revertido para versão de ${version.createdAt.toLocaleDateString("pt-BR")}`,
+    });
+  }
+
+  // Revert the page to the selected version
+  await db.update(pages).set({
+    title: version.title,
+    content: version.content,
+    excerpt: version.excerpt,
+    featuredImage: version.featuredImage,
+    status: version.status,
+    menuLabel: version.menuLabel,
+    showInMenu: version.showInMenu,
+    updatedAt: new Date(),
+  }).where(eq(pages.id, pageId));
 }

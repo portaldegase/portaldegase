@@ -60,7 +60,7 @@ export const appRouter = router({
 
   tags: router({
     list: publicProcedure.query(async () => db.listTags()),
-    create: editorProcedure.input(z.object({
+    create: adminProcedure.input(z.object({
       name: z.string().min(1),
       slug: z.string().optional(),
     })).mutation(async ({ input }) => {
@@ -72,24 +72,14 @@ export const appRouter = router({
 
   posts: router({
     list: publicProcedure.input(z.object({
-      status: z.string().optional(),
       categoryId: z.number().optional(),
-      limit: z.number().optional(),
-      offset: z.number().optional(),
-      search: z.string().optional(),
-      featured: z.boolean().optional(),
-    }).optional()).query(async ({ input }) => db.listPosts(input ?? {})),
-
-    getBySlug: publicProcedure.input(z.object({ slug: z.string() })).query(async ({ input }) => {
-      const post = await db.getPostBySlug(input.slug);
-      if (post) await db.incrementPostViews(post.id);
-      return post;
-    }),
-
+      status: z.enum(['draft', 'published', 'archived']).optional(),
+      limit: z.number().default(10),
+      offset: z.number().default(0),
+    })).query(async ({ input }) => db.listPosts(input)),
+    getBySlug: publicProcedure.input(z.object({ slug: z.string() })).query(async ({ input }) => db.getPostBySlug(input.slug)),
     getById: publicProcedure.input(z.object({ id: z.number() })).query(async ({ input }) => db.getPostById(input.id)),
-
-    getTags: publicProcedure.input(z.object({ postId: z.number() })).query(async ({ input }) => db.getPostTags(input.postId)),
-
+    search: publicProcedure.input(z.object({ q: z.string(), limit: z.number().default(10) })).query(async ({ input }) => db.searchPosts(input.q, input.limit)),
     create: editorProcedure.input(z.object({
       title: z.string().min(1),
       slug: z.string().optional(),
@@ -97,50 +87,77 @@ export const appRouter = router({
       content: z.string().min(1),
       featuredImage: z.string().optional(),
       categoryId: z.number().optional(),
-      status: z.enum(["draft", "published", "archived"]).optional(),
+      status: z.enum(['draft', 'published']).default('draft'),
       isFeatured: z.boolean().optional(),
-      tagIds: z.array(z.number()).optional(),
+      tags: z.array(z.number()).optional(),
     })).mutation(async ({ input, ctx }) => {
       const slug = input.slug || slugify(input.title);
-      const { tagIds, ...postData } = input;
-      const publishedAt = input.status === "published" ? new Date() : undefined;
-      const id = await db.createPost({ ...postData, slug, authorId: ctx.user.id, publishedAt });
-      if (tagIds && tagIds.length > 0) await db.setPostTags(id, tagIds);
-      return id;
+      const post = await db.createPost({
+        ...input,
+        slug,
+        authorId: ctx.user.id,
+      });
+      if (input.tags && input.tags.length > 0) {
+        await db.setPostTags(post.id, input.tags);
+      }
+      await db.createPostHistory(post.id, {
+        title: post.title,
+        excerpt: post.excerpt,
+        content: post.content,
+        featuredImage: post.featuredImage,
+        status: post.status,
+        isFeatured: post.isFeatured,
+        editorId: ctx.user.id,
+        changeDescription: 'Post criado',
+      });
+      return post;
     }),
-
     update: editorProcedure.input(z.object({
       id: z.number(),
       title: z.string().optional(),
-      slug: z.string().optional(),
       excerpt: z.string().optional(),
       content: z.string().optional(),
       featuredImage: z.string().optional(),
       categoryId: z.number().optional(),
-      status: z.enum(["draft", "published", "archived"]).optional(),
+      status: z.enum(['draft', 'published', 'archived']).optional(),
       isFeatured: z.boolean().optional(),
-      tagIds: z.array(z.number()).optional(),
-    })).mutation(async ({ input }) => {
-      const { id, tagIds, ...data } = input;
-      if (data.status === "published") {
-        const existing = await db.getPostById(id);
-        if (existing && !existing.publishedAt) (data as any).publishedAt = new Date();
+      tags: z.array(z.number()).optional(),
+      changeDescription: z.string().optional(),
+    })).mutation(async ({ input, ctx }) => {
+      const post = await db.getPostById(input.id);
+      if (!post) throw new TRPCError({ code: 'NOT_FOUND', message: 'Post nao encontrado' });
+      if (ctx.user.role !== 'admin' && post.authorId !== ctx.user.id) {
+        throw new TRPCError({ code: 'FORBIDDEN', message: 'Voce nao tem permissao para editar este post' });
       }
-      await db.updatePost(id, data);
-      if (tagIds !== undefined) await db.setPostTags(id, tagIds);
+      const { id, tags, changeDescription, ...data } = input;
+      const updated = await db.updatePost(id, data);
+      if (tags) await db.setPostTags(id, tags);
+      await db.createPostHistory(id, {
+        title: updated.title,
+        excerpt: updated.excerpt,
+        content: updated.content,
+        featuredImage: updated.featuredImage,
+        status: updated.status,
+        isFeatured: updated.isFeatured,
+        editorId: ctx.user.id,
+        changeDescription: changeDescription || 'Post atualizado',
+      });
+      return updated;
     }),
-
-    delete: adminProcedure.input(z.object({ id: z.number() })).mutation(async ({ input }) => db.deletePost(input.id)),
+    delete: editorProcedure.input(z.object({ id: z.number() })).mutation(async ({ input, ctx }) => {
+      const post = await db.getPostById(input.id);
+      if (!post) throw new TRPCError({ code: 'NOT_FOUND', message: 'Post nao encontrado' });
+      if (ctx.user.role !== 'admin' && post.authorId !== ctx.user.id) {
+        throw new TRPCError({ code: 'FORBIDDEN', message: 'Voce nao tem permissao para deletar este post' });
+      }
+      return db.deletePost(input.id);
+    }),
   }),
 
   pages: router({
-    list: publicProcedure.input(z.object({
-      status: z.string().optional(),
-      showInMenu: z.boolean().optional(),
-    }).optional()).query(async ({ input }) => db.listPages(input ?? {})),
-
+    list: publicProcedure.query(async () => db.listPages()),
     getBySlug: publicProcedure.input(z.object({ slug: z.string() })).query(async ({ input }) => db.getPageBySlug(input.slug)),
-
+    getById: publicProcedure.input(z.object({ id: z.number() })).query(async ({ input }) => db.getPageById(input.id)),
     create: adminProcedure.input(z.object({
       title: z.string().min(1),
       slug: z.string().optional(),
@@ -149,153 +166,176 @@ export const appRouter = router({
       featuredImage: z.string().optional(),
       parentId: z.number().optional(),
       sortOrder: z.number().optional(),
-      status: z.enum(["draft", "published", "archived"]).optional(),
-      showInMenu: z.boolean().optional(),
+      status: z.enum(['draft', 'published']).default('published'),
       menuLabel: z.string().optional(),
+      showInMenu: z.boolean().optional(),
     })).mutation(async ({ input, ctx }) => {
       const slug = input.slug || slugify(input.title);
-      return db.createPage({ ...input, slug, authorId: ctx.user.id });
+      const page = await db.createPage({ ...input, slug });
+      await db.createPageHistory(page.id, {
+        title: page.title,
+        content: page.content,
+        excerpt: page.excerpt,
+        featuredImage: page.featuredImage,
+        status: page.status,
+        menuLabel: page.menuLabel,
+        showInMenu: page.showInMenu,
+        editorId: ctx.user.id,
+        changeDescription: 'Pagina criada',
+      });
+      return page;
     }),
-
     update: adminProcedure.input(z.object({
       id: z.number(),
       title: z.string().optional(),
-      slug: z.string().optional(),
       content: z.string().optional(),
       excerpt: z.string().optional(),
       featuredImage: z.string().optional(),
       parentId: z.number().optional(),
       sortOrder: z.number().optional(),
-      status: z.enum(["draft", "published", "archived"]).optional(),
-      showInMenu: z.boolean().optional(),
+      status: z.enum(['draft', 'published', 'archived']).optional(),
       menuLabel: z.string().optional(),
-    })).mutation(async ({ input }) => {
-      const { id, ...data } = input;
-      return db.updatePage(id, data);
+      showInMenu: z.boolean().optional(),
+      changeDescription: z.string().optional(),
+    })).mutation(async ({ input, ctx }) => {
+      const { id, changeDescription, ...data } = input;
+      const page = await db.getPageById(id);
+      if (!page) throw new TRPCError({ code: 'NOT_FOUND', message: 'Pagina nao encontrada' });
+      await db.updatePage(id, data);
+      const updated = { ...page, ...data };
+      await db.createPageHistory(id, {
+        title: updated.title || page.title,
+        content: updated.content || page.content,
+        excerpt: updated.excerpt || page.excerpt || null,
+        featuredImage: updated.featuredImage || page.featuredImage || null,
+        status: (updated.status || page.status) as 'draft' | 'published' | 'archived',
+        menuLabel: updated.menuLabel || page.menuLabel || null,
+        showInMenu: updated.showInMenu !== undefined ? updated.showInMenu : (page.showInMenu || false),
+        editorId: ctx.user.id,
+        changeDescription: changeDescription || 'Pagina atualizada',
+      });
+      return updated;
     }),
-
     delete: adminProcedure.input(z.object({ id: z.number() })).mutation(async ({ input }) => db.deletePage(input.id)),
   }),
 
   banners: router({
-    list: publicProcedure.input(z.object({ activeOnly: z.boolean().optional() }).optional()).query(async ({ input }) => db.listBanners(input?.activeOnly ?? false)),
-    create: adminProcedure.input(z.object({
+    list: publicProcedure.query(async () => db.listBanners()),
+    create: editorProcedure.input(z.object({
       title: z.string().min(1),
-      subtitle: z.string().optional(),
       imageUrl: z.string().min(1),
       linkUrl: z.string().optional(),
+      categoryId: z.number().optional(),
       sortOrder: z.number().optional(),
       isActive: z.boolean().optional(),
-    })).mutation(async ({ input }) => db.createBanner(input)),
-    update: adminProcedure.input(z.object({
+    })).mutation(async ({ input, ctx }) => {
+      const banner = await db.createBanner(input);
+      return banner;
+    }),
+    update: editorProcedure.input(z.object({
       id: z.number(),
       title: z.string().optional(),
-      subtitle: z.string().optional(),
       imageUrl: z.string().optional(),
       linkUrl: z.string().optional(),
+      categoryId: z.number().optional(),
       sortOrder: z.number().optional(),
       isActive: z.boolean().optional(),
-    })).mutation(async ({ input }) => { const { id, ...data } = input; return db.updateBanner(id, data); }),
-    delete: adminProcedure.input(z.object({ id: z.number() })).mutation(async ({ input }) => db.deleteBanner(input.id)),
+    })).mutation(async ({ input }) => {
+      const { id, ...data } = input;
+      return db.updateBanner(id, data);
+    }),
+    delete: editorProcedure.input(z.object({ id: z.number() })).mutation(async ({ input }) => db.deleteBanner(input.id)),
   }),
 
   videos: router({
-    list: publicProcedure.input(z.object({ activeOnly: z.boolean().optional() }).optional()).query(async ({ input }) => db.listVideos(input?.activeOnly ?? false)),
-    create: adminProcedure.input(z.object({
+    list: publicProcedure.query(async () => db.listVideos()),
+    create: editorProcedure.input(z.object({
       title: z.string().min(1),
+      description: z.string().optional(),
       youtubeUrl: z.string().min(1),
-      description: z.string().optional(),
       thumbnailUrl: z.string().optional(),
-      isFeatured: z.boolean().optional(),
+      categoryId: z.number().optional(),
       sortOrder: z.number().optional(),
+      isActive: z.boolean().optional(),
     })).mutation(async ({ input }) => db.createVideo(input)),
-    update: adminProcedure.input(z.object({
+    update: editorProcedure.input(z.object({
       id: z.number(),
       title: z.string().optional(),
+      description: z.string().optional(),
       youtubeUrl: z.string().optional(),
-      description: z.string().optional(),
       thumbnailUrl: z.string().optional(),
-      isFeatured: z.boolean().optional(),
-      isActive: z.boolean().optional(),
-      sortOrder: z.number().optional(),
-    })).mutation(async ({ input }) => { const { id, ...data } = input; return db.updateVideo(id, data); }),
-    delete: adminProcedure.input(z.object({ id: z.number() })).mutation(async ({ input }) => db.deleteVideo(input.id)),
-  }),
-
-  transparency: router({
-    list: publicProcedure.input(z.object({ section: z.string().optional() }).optional()).query(async ({ input }) => db.listTransparencyItems(input?.section)),
-    create: adminProcedure.input(z.object({
-      title: z.string().min(1),
-      description: z.string().optional(),
-      linkUrl: z.string().optional(),
-      icon: z.string().optional(),
-      section: z.string().min(1),
-      sortOrder: z.number().optional(),
-    })).mutation(async ({ input }) => db.createTransparencyItem(input)),
-    update: adminProcedure.input(z.object({
-      id: z.number(),
-      title: z.string().optional(),
-      description: z.string().optional(),
-      linkUrl: z.string().optional(),
-      icon: z.string().optional(),
-      section: z.string().optional(),
+      categoryId: z.number().optional(),
       sortOrder: z.number().optional(),
       isActive: z.boolean().optional(),
-    })).mutation(async ({ input }) => { const { id, ...data } = input; return db.updateTransparencyItem(id, data); }),
-    delete: adminProcedure.input(z.object({ id: z.number() })).mutation(async ({ input }) => db.deleteTransparencyItem(input.id)),
+    })).mutation(async ({ input }) => {
+      const { id, ...data } = input;
+      return db.updateVideo(id, data);
+    }),
+    delete: editorProcedure.input(z.object({ id: z.number() })).mutation(async ({ input }) => db.deleteVideo(input.id)),
   }),
 
   units: router({
-    list: publicProcedure.input(z.object({ type: z.string().optional() }).optional()).query(async ({ input }) => db.listUnits(input?.type)),
+    list: publicProcedure.query(async () => db.listUnits()),
     create: adminProcedure.input(z.object({
       name: z.string().min(1),
-      type: z.enum(["internacao", "internacao_provisoria", "semiliberdade", "meio_aberto"]),
+      type: z.enum(['internacao', 'internacao_provisoria', 'semiliberdade', 'meio_aberto']),
       address: z.string().optional(),
       phone: z.string().optional(),
       email: z.string().optional(),
       visitDays: z.string().optional(),
       mapsUrl: z.string().optional(),
       sortOrder: z.number().optional(),
+      isActive: z.boolean().optional(),
     })).mutation(async ({ input }) => db.createUnit(input)),
     update: adminProcedure.input(z.object({
       id: z.number(),
       name: z.string().optional(),
-      type: z.enum(["internacao", "internacao_provisoria", "semiliberdade", "meio_aberto"]).optional(),
+      type: z.enum(['internacao', 'internacao_provisoria', 'semiliberdade', 'meio_aberto']).optional(),
       address: z.string().optional(),
       phone: z.string().optional(),
       email: z.string().optional(),
       visitDays: z.string().optional(),
       mapsUrl: z.string().optional(),
-      isActive: z.boolean().optional(),
       sortOrder: z.number().optional(),
-    })).mutation(async ({ input }) => { const { id, ...data } = input; return db.updateUnit(id, data); }),
+      isActive: z.boolean().optional(),
+    })).mutation(async ({ input }) => {
+      const { id, ...data } = input;
+      return db.updateUnit(id, data);
+    }),
     delete: adminProcedure.input(z.object({ id: z.number() })).mutation(async ({ input }) => db.deleteUnit(input.id)),
   }),
 
-  config: router({
-    get: publicProcedure.input(z.object({ key: z.string() })).query(async ({ input }) => db.getSiteConfig(input.key)),
-    getAll: publicProcedure.query(async () => db.getAllSiteConfig()),
-    set: adminProcedure.input(z.object({
-      key: z.string().min(1),
-      value: z.string(),
+  transparency: router({
+    list: publicProcedure.query(async () => db.listTransparencyItems()),
+    create: adminProcedure.input(z.object({
+      title: z.string().min(1),
+      section: z.string().min(1),
       description: z.string().optional(),
-    })).mutation(async ({ input }) => db.setSiteConfig(input.key, input.value, input.description)),
-  }),
-
-  search: router({
-    query: publicProcedure.input(z.object({ q: z.string().min(1), limit: z.number().optional() })).query(async ({ input }) => db.searchContent(input.q, input.limit)),
+      linkUrl: z.string().optional(),
+      sortOrder: z.number().optional(),
+      isActive: z.boolean().optional(),
+    })).mutation(async ({ input }) => db.createTransparencyItem(input)),
+    update: adminProcedure.input(z.object({
+      id: z.number(),
+      title: z.string().optional(),
+      section: z.string().optional(),
+      description: z.string().optional(),
+      linkUrl: z.string().optional(),
+      sortOrder: z.number().optional(),
+      isActive: z.boolean().optional(),
+    })).mutation(async ({ input }) => {
+      const { id, ...data } = input;
+      return db.updateTransparencyItem(id, data);
+    }),
+    delete: adminProcedure.input(z.object({ id: z.number() })).mutation(async ({ input }) => db.deleteTransparencyItem(input.id)),
   }),
 
   upload: router({
     image: editorProcedure.input(z.object({
-      file: z.instanceof(Buffer),
+      file: z.instanceof(Uint8Array),
       filename: z.string(),
       mimetype: z.string(),
     })).mutation(async ({ input }) => {
-      const allowedMimes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
-      if (!allowedMimes.includes(input.mimetype)) {
-        throw new TRPCError({ code: 'BAD_REQUEST', message: 'Tipo de arquivo nao permitido. Use JPEG, PNG, WebP ou GIF.' });
-      }
       const maxSize = 5 * 1024 * 1024;
       if (input.file.length > maxSize) {
         throw new TRPCError({ code: 'BAD_REQUEST', message: 'Arquivo muito grande. Maximo 5MB.' });
@@ -331,6 +371,34 @@ export const appRouter = router({
       categoryId: z.number().optional(),
     })).mutation(async ({ input }) => db.updateUserRole(input.id, input.role, input.categoryId)),
     deleteUser: adminProcedure.input(z.object({ id: z.number() })).mutation(async ({ input }) => db.deleteUser(input.id)),
+  }),
+
+  history: router({
+    getPostHistory: editorProcedure.input(z.object({ postId: z.number() })).query(async ({ input }) => db.getPostHistory(input.postId)),
+    getPostHistoryById: editorProcedure.input(z.object({ historyId: z.number() })).query(async ({ input }) => db.getPostHistoryById(input.historyId)),
+    revertPostToVersion: editorProcedure.input(z.object({
+      postId: z.number(),
+      historyId: z.number(),
+    })).mutation(async ({ input, ctx }) => {
+      const post = await db.getPostById(input.postId);
+      if (!post) throw new TRPCError({ code: 'NOT_FOUND', message: 'Post nao encontrado' });
+      if (ctx.user.role !== 'admin' && post.authorId !== ctx.user.id) {
+        throw new TRPCError({ code: 'FORBIDDEN', message: 'Voce nao tem permissao para reverter este post' });
+      }
+      await db.revertPostToVersion(input.postId, input.historyId, ctx.user.id);
+      return { success: true };
+    }),
+    getPageHistory: editorProcedure.input(z.object({ pageId: z.number() })).query(async ({ input }) => db.getPageHistory(input.pageId)),
+    getPageHistoryById: editorProcedure.input(z.object({ historyId: z.number() })).query(async ({ input }) => db.getPageHistoryById(input.historyId)),
+    revertPageToVersion: adminProcedure.input(z.object({
+      pageId: z.number(),
+      historyId: z.number(),
+    })).mutation(async ({ input, ctx }) => {
+      const page = await db.getPageById(input.pageId);
+      if (!page) throw new TRPCError({ code: 'NOT_FOUND', message: 'Pagina nao encontrada' });
+      await db.revertPageToVersion(input.pageId, input.historyId, ctx.user.id);
+      return { success: true };
+    }),
   }),
 });
 

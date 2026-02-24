@@ -199,3 +199,44 @@ export const siteConfig = mysqlTable("site_config", {
 
 export type SiteConfig = typeof siteConfig.$inferSelect;
 export type InsertSiteConfig = typeof siteConfig.$inferInsert;
+
+/**
+ * Post version history - tracks all changes to posts
+ */
+export const postHistory = mysqlTable("post_history", {
+  id: int("id").autoincrement().primaryKey(),
+  postId: int("postId").notNull(),
+  title: varchar("title", { length: 500 }).notNull(),
+  excerpt: text("excerpt"),
+  content: text("content").notNull(),
+  featuredImage: text("featuredImage"),
+  status: mysqlEnum("status", ["draft", "published", "archived"]).default("draft").notNull(),
+  isFeatured: boolean("isFeatured").default(false).notNull(),
+  editorId: int("editorId"),
+  changeDescription: varchar("changeDescription", { length: 500 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type PostHistory = typeof postHistory.$inferSelect;
+export type InsertPostHistory = typeof postHistory.$inferInsert;
+
+/**
+ * Page version history - tracks all changes to pages
+ */
+export const pageHistory = mysqlTable("page_history", {
+  id: int("id").autoincrement().primaryKey(),
+  pageId: int("pageId").notNull(),
+  title: varchar("title", { length: 500 }).notNull(),
+  content: text("content").notNull(),
+  excerpt: text("excerpt"),
+  featuredImage: text("featuredImage"),
+  status: mysqlEnum("status", ["draft", "published", "archived"]).default("draft").notNull(),
+  menuLabel: varchar("menuLabel", { length: 255 }),
+  showInMenu: boolean("showInMenu").default(false).notNull(),
+  editorId: int("editorId"),
+  changeDescription: varchar("changeDescription", { length: 500 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type PageHistory = typeof pageHistory.$inferSelect;
+export type InsertPageHistory = typeof pageHistory.$inferInsert;
