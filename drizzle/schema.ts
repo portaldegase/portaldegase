@@ -274,3 +274,47 @@ export const colorThemes = mysqlTable("color_themes", {
 
 export type ColorTheme = typeof colorThemes.$inferSelect;
 export type InsertColorTheme = typeof colorThemes.$inferInsert;
+
+
+/**
+ * Comentários em notícias
+ */
+export const comments = mysqlTable("comments", {
+  id: int("id").autoincrement().primaryKey(),
+  postId: int("postId").notNull(),
+  authorName: varchar("authorName", { length: 255 }).notNull(),
+  authorEmail: varchar("authorEmail", { length: 320 }).notNull(),
+  content: text("content").notNull(),
+  status: mysqlEnum("status", ["pending", "approved", "rejected", "spam"]).default("pending").notNull(),
+  moderatedBy: int("moderatedBy"), // ID do usuário que moderou
+  moderationReason: text("moderationReason"), // Motivo da rejeição
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Comment = typeof comments.$inferSelect;
+export type InsertComment = typeof comments.$inferInsert;
+
+/**
+ * Galeria de mídia (imagens e vídeos)
+ */
+export const mediaLibrary = mysqlTable("media_library", {
+  id: int("id").autoincrement().primaryKey(),
+  title: varchar("title", { length: 255 }).notNull(),
+  description: text("description"),
+  url: text("url").notNull(), // URL do S3
+  fileKey: varchar("fileKey", { length: 500 }).notNull(), // Chave do arquivo no S3
+  fileType: mysqlEnum("fileType", ["image", "video"]).notNull(),
+  mimeType: varchar("mimeType", { length: 100 }).notNull(),
+  fileSize: int("fileSize"), // Tamanho em bytes
+  width: int("width"), // Para imagens
+  height: int("height"), // Para imagens
+  duration: int("duration"), // Para vídeos em segundos
+  uploadedBy: int("uploadedBy").notNull(), // ID do usuário que fez upload
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type MediaLibrary = typeof mediaLibrary.$inferSelect;
+export type InsertMediaLibrary = typeof mediaLibrary.$inferInsert;
+

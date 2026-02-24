@@ -43,6 +43,13 @@
       "when": 1771953923694,
       "tag": "0005_skinny_calypso",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1771954301906,
+      "tag": "0006_lean_la_nuit",
+      "breakpoints": true
     }
   ]
 }

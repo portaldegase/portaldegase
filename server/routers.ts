@@ -29,6 +29,20 @@ export const appRouter = router({
   }),
 
   categories: router({
+    // Tags
+    listTags: publicProcedure.query(async () => db.listTags()),
+    createTag: adminProcedure.input(z.object({
+      name: z.string().min(1).max(128),
+      slug: z.string().optional(),
+    })).mutation(async ({ input }) => {
+      const slug = input.slug || slugify(input.name);
+      return db.createTag({ name: input.name, slug });
+    }),
+    deleteTag: adminProcedure.input(z.object({ id: z.number() })).mutation(async ({ input }) => {
+      await db.deleteTag(input.id);
+      return { success: true };
+    }),
+
     list: publicProcedure.query(async () => db.listCategories()),
     getBySlug: publicProcedure.input(z.object({ slug: z.string() })).query(async ({ input }) => db.getCategoryBySlug(input.slug)),
     create: adminProcedure.input(z.object({
@@ -475,6 +489,65 @@ export const appRouter = router({
       const page = await db.getPageById(input.pageId);
       if (!page) throw new TRPCError({ code: 'NOT_FOUND', message: 'Pagina nao encontrada' });
       await db.revertPageToVersion(input.pageId, input.historyId, ctx.user.id);
+      return { success: true };
+    }),
+  }),
+
+  comments: router({
+    getPostComments: publicProcedure.input(z.object({ postId: z.number() })).query(async ({ input }) => db.getPostComments(input.postId, true)),
+    createComment: publicProcedure.input(z.object({
+      postId: z.number(),
+      authorName: z.string().min(1).max(255),
+      authorEmail: z.string().email(),
+      content: z.string().min(1).max(5000),
+    })).mutation(async ({ input }) => {
+      await db.createComment({ ...input, status: 'pending' });
+      return { success: true, message: 'Comentário enviado para moderação' };
+    }),
+    getPendingComments: adminProcedure.query(async () => db.getPendingComments()),
+    approveComment: adminProcedure.input(z.object({ id: z.number() })).mutation(async ({ input, ctx }) => {
+      await db.updateCommentStatus(input.id, 'approved', ctx.user.id);
+      return { success: true };
+    }),
+    rejectComment: adminProcedure.input(z.object({ id: z.number(), reason: z.string().optional() })).mutation(async ({ input, ctx }) => {
+      await db.updateCommentStatus(input.id, 'rejected', ctx.user.id, input.reason);
+      return { success: true };
+    }),
+    deleteComment: adminProcedure.input(z.object({ id: z.number() })).mutation(async ({ input }) => {
+      await db.deleteComment(input.id);
+      return { success: true };
+    }),
+  }),
+
+  media: router({
+    getLibrary: publicProcedure.input(z.object({ limit: z.number().default(50), offset: z.number().default(0) })).query(async ({ input }) => db.getMediaLibrary(input.limit, input.offset)),
+    getByType: publicProcedure.input(z.object({ fileType: z.enum(['image', 'video']), limit: z.number().default(50), offset: z.number().default(0) })).query(async ({ input }) => db.getMediaByType(input.fileType, input.limit, input.offset)),
+    getById: publicProcedure.input(z.object({ id: z.number() })).query(async ({ input }) => db.getMediaById(input.id)),
+    createMedia: editorProcedure.input(z.object({
+      title: z.string().min(1).max(255),
+      description: z.string().optional(),
+      url: z.string().url(),
+      fileKey: z.string(),
+      fileType: z.enum(['image', 'video']),
+      mimeType: z.string(),
+      fileSize: z.number().optional(),
+      width: z.number().optional(),
+      height: z.number().optional(),
+      duration: z.number().optional(),
+    })).mutation(async ({ input, ctx }) => {
+      await db.createMediaItem({ ...input, uploadedBy: ctx.user.id });
+      return { success: true };
+    }),
+    updateMedia: editorProcedure.input(z.object({
+      id: z.number(),
+      title: z.string().optional(),
+      description: z.string().optional(),
+    })).mutation(async ({ input }) => {
+      await db.updateMediaItem(input.id, { title: input.title, description: input.description });
+      return { success: true };
+    }),
+    deleteMedia: adminProcedure.input(z.object({ id: z.number() })).mutation(async ({ input }) => {
+      await db.deleteMediaItem(input.id);
       return { success: true };
     }),
   }),

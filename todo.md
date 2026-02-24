@@ -156,3 +156,29 @@
 - [x] Customização de cores no admin
 - [x] Acessibilidade (ARIA labels)
 - [x] Placeholder mais descritivo
+
+## Sistema de Comentarios
+- [x] Tabela de comentarios no banco de dados
+- [x] Endpoints tRPC para CRUD de comentarios
+- [x] Componente CommentsSection com formulario
+- [x] Listagem de comentarios na pagina de noticia
+- [x] Moderacao de comentarios (admin)
+- [x] Notificacao de comentario pendente
+- [x] Validacao de entrada
+
+## Galeria de Imagens e Videos
+- [x] Tabela de midia no banco de dados
+- [x] Endpoints tRPC para gerenciar midia
+- [x] Pagina admin AdminMediaGallery
+- [x] Filtro por tipo (imagem/video)
+- [x] Organizacao com paginacao
+- [x] Copia de URL para insercao em posts
+- [x] Preview de midia
+
+## Sistema de Tags
+- [x] Tabela de tags no banco de dados
+- [x] Endpoints tRPC para gerenciar tags
+- [x] Componente TagSelector para selecao
+- [x] Criacao de novas tags no editor
+- [x] Relacao muitos-para-muitos com posts
+- [x] Busca por tags

@@ -14,6 +14,9 @@ import {
   siteConfig, InsertSiteConfig,
   postHistory, InsertPostHistory,
   pageHistory, InsertPageHistory,
+  comments, InsertComment,
+  mediaLibrary, InsertMediaLibrary,
+  colorThemes, InsertColorTheme,
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -676,4 +679,148 @@ export async function deleteColorTheme(id: number) {
   if (!db) throw new Error("DB not available");
   
   await db.delete(colorThemes).where(eq(colorThemes.id, id));
+}
+
+
+// ==================== COMENTÁRIOS ====================
+export async function createComment(comment: InsertComment) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  
+  const result = await db.insert(comments).values(comment);
+  return result;
+}
+
+export async function getPostComments(postId: number, onlyApproved = true) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const query = db.select().from(comments).where(eq(comments.postId, postId));
+  if (onlyApproved) {
+    return query.where(eq(comments.status, 'approved')).orderBy(desc(comments.createdAt));
+  }
+  return query.orderBy(desc(comments.createdAt));
+}
+
+export async function getPendingComments() {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return db.select().from(comments).where(eq(comments.status, 'pending')).orderBy(desc(comments.createdAt));
+}
+
+export async function updateCommentStatus(id: number, status: 'approved' | 'rejected' | 'spam', moderatedBy: number, reason?: string) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  
+  await db.update(comments).set({
+    status,
+    moderatedBy,
+    moderationReason: reason,
+    updatedAt: new Date(),
+  }).where(eq(comments.id, id));
+}
+
+export async function deleteComment(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  
+  await db.delete(comments).where(eq(comments.id, id));
+}
+
+// ==================== MÍDIA ====================
+export async function createMediaItem(media: InsertMediaLibrary) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  
+  const result = await db.insert(mediaLibrary).values(media);
+  return result;
+}
+
+export async function getMediaLibrary(limit = 50, offset = 0) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return db.select().from(mediaLibrary).orderBy(desc(mediaLibrary.createdAt)).limit(limit).offset(offset);
+}
+
+export async function getMediaByType(fileType: 'image' | 'video', limit = 50, offset = 0) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return db.select().from(mediaLibrary).where(eq(mediaLibrary.fileType, fileType)).orderBy(desc(mediaLibrary.createdAt)).limit(limit).offset(offset);
+}
+
+export async function getMediaById(id: number) {
+  const db = await getDb();
+  if (!db) return null;
+  
+  const result = await db.select().from(mediaLibrary).where(eq(mediaLibrary.id, id)).limit(1);
+  return result.length > 0 ? result[0] : null;
+}
+
+export async function updateMediaItem(id: number, media: Partial<InsertMediaLibrary>) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  
+  await db.update(mediaLibrary).set({
+    ...media,
+    updatedAt: new Date(),
+  }).where(eq(mediaLibrary.id, id));
+}
+
+export async function deleteMediaItem(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  
+  await db.delete(mediaLibrary).where(eq(mediaLibrary.id, id));
+}
+
+
+// ==================== BUSCA ====================
+export async function searchPosts(query: string, limit = 10) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const searchTerm = `%${query}%`;
+  return db.select().from(posts)
+    .where(
+      or(
+        like(posts.title, searchTerm),
+        like(posts.content, searchTerm),
+        like(posts.excerpt, searchTerm)
+      )
+    )
+    .where(eq(posts.status, 'published'))
+    .limit(limit)
+    .orderBy(desc(posts.createdAt));
+}
+
+
+export async function addTagToPost(postId: number, tagId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  
+  await db.insert(postTags).values({ postId, tagId }).onDuplicateKeyUpdate({ set: {} });
+}
+
+export async function removeTagFromPost(postId: number, tagId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  
+  await db.delete(postTags).where(and(eq(postTags.postId, postId), eq(postTags.tagId, tagId)));
+}
+
+
+export async function getPostsByTag(tagId: number, limit = 10) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const result = await db.select({ post: posts }).from(postTags)
+    .innerJoin(posts, eq(postTags.postId, posts.id))
+    .where(and(eq(postTags.tagId, tagId), eq(posts.status, 'published')))
+    .limit(limit)
+    .orderBy(desc(posts.createdAt));
+  
+  return result.map(r => r.post);
 }
