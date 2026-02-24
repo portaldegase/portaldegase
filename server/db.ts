@@ -624,3 +624,56 @@ export async function getScheduledPostsForUser(userId: number) {
     )
   ).orderBy(asc(posts.scheduledAt));
 }
+
+
+// ==================== TEMAS DE CORES ====================
+export async function createColorTheme(theme: InsertColorTheme) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  
+  const result = await db.insert(colorThemes).values(theme);
+  return result;
+}
+
+export async function getColorThemes() {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return db.select().from(colorThemes).orderBy(desc(colorThemes.createdAt));
+}
+
+export async function getActiveColorTheme() {
+  const db = await getDb();
+  if (!db) return null;
+  
+  const result = await db.select().from(colorThemes).where(eq(colorThemes.isActive, true)).limit(1);
+  return result.length > 0 ? result[0] : null;
+}
+
+export async function updateColorTheme(id: number, theme: Partial<InsertColorTheme>) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  
+  await db.update(colorThemes).set({
+    ...theme,
+    updatedAt: new Date(),
+  }).where(eq(colorThemes.id, id));
+}
+
+export async function activateColorTheme(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  
+  // Desativar todos os outros temas
+  await db.update(colorThemes).set({ isActive: false });
+  
+  // Ativar o tema selecionado
+  await db.update(colorThemes).set({ isActive: true }).where(eq(colorThemes.id, id));
+}
+
+export async function deleteColorTheme(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  
+  await db.delete(colorThemes).where(eq(colorThemes.id, id));
+}

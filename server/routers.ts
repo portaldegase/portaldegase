@@ -405,6 +405,52 @@ export const appRouter = router({
     deleteUser: adminProcedure.input(z.object({ id: z.number() })).mutation(async ({ input }) => db.deleteUser(input.id)),
   }),
 
+  themes: router({
+    list: publicProcedure.query(async () => db.getColorThemes()),
+    getActive: publicProcedure.query(async () => db.getActiveColorTheme()),
+    create: adminProcedure.input(z.object({
+      name: z.string().min(1),
+      description: z.string().optional(),
+      primaryColor: z.string().regex(/^#[0-9A-F]{6}$/i),
+      secondaryColor: z.string().regex(/^#[0-9A-F]{6}$/i),
+      accentColor: z.string().regex(/^#[0-9A-F]{6}$/i),
+      textColor: z.string().regex(/^#[0-9A-F]{6}$/i),
+      textLightColor: z.string().regex(/^#[0-9A-F]{6}$/i),
+      backgroundColor: z.string().regex(/^#[0-9A-F]{6}$/i),
+      surfaceColor: z.string().regex(/^#[0-9A-F]{6}$/i),
+      searchBgColor: z.string().regex(/^#[0-9A-F]{6}$/i),
+      searchTextColor: z.string().regex(/^#[0-9A-F]{6}$/i),
+      searchBorderColor: z.string().regex(/^#[0-9A-F]{6}$/i),
+    })).mutation(async ({ input }) => db.createColorTheme(input)),
+    update: adminProcedure.input(z.object({
+      id: z.number(),
+      name: z.string().optional(),
+      description: z.string().optional(),
+      primaryColor: z.string().regex(/^#[0-9A-F]{6}$/i).optional(),
+      secondaryColor: z.string().regex(/^#[0-9A-F]{6}$/i).optional(),
+      accentColor: z.string().regex(/^#[0-9A-F]{6}$/i).optional(),
+      textColor: z.string().regex(/^#[0-9A-F]{6}$/i).optional(),
+      textLightColor: z.string().regex(/^#[0-9A-F]{6}$/i).optional(),
+      backgroundColor: z.string().regex(/^#[0-9A-F]{6}$/i).optional(),
+      surfaceColor: z.string().regex(/^#[0-9A-F]{6}$/i).optional(),
+      searchBgColor: z.string().regex(/^#[0-9A-F]{6}$/i).optional(),
+      searchTextColor: z.string().regex(/^#[0-9A-F]{6}$/i).optional(),
+      searchBorderColor: z.string().regex(/^#[0-9A-F]{6}$/i).optional(),
+    })).mutation(async ({ input }) => {
+      const { id, ...data } = input;
+      await db.updateColorTheme(id, data);
+      return { success: true };
+    }),
+    activate: adminProcedure.input(z.object({ id: z.number() })).mutation(async ({ input }) => {
+      await db.activateColorTheme(input.id);
+      return { success: true };
+    }),
+    delete: adminProcedure.input(z.object({ id: z.number() })).mutation(async ({ input }) => {
+      await db.deleteColorTheme(input.id);
+      return { success: true };
+    }),
+  }),
+
   history: router({
     getPostHistory: editorProcedure.input(z.object({ postId: z.number() })).query(async ({ input }) => db.getPostHistory(input.postId)),
     getPostHistoryById: editorProcedure.input(z.object({ historyId: z.number() })).query(async ({ input }) => db.getPostHistoryById(input.historyId)),

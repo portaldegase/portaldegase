@@ -98,17 +98,27 @@ export default function SiteHeader() {
                 type="search"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Buscar..."
-                className="px-3 py-1.5 rounded-l-md text-sm text-gray-800 w-48 lg:w-64 focus:outline-none"
-                aria-label="Campo de busca"
+                placeholder="Digite aqui para buscar..."
+                className="px-3 py-1.5 rounded-l-md text-sm w-48 lg:w-64 focus:outline-none focus:ring-2"
+                style={{
+                  backgroundColor: "#FFFFFF",
+                  color: "#333333",
+                  borderRight: "1px solid var(--degase-gold)",
+                  focusRing: "2px solid var(--degase-gold)",
+                }}
+                aria-label="Campo de busca do site"
               />
               <button
                 type="submit"
-                className="px-3 py-1.5 rounded-r-md text-sm font-medium"
-                style={{ backgroundColor: "var(--degase-gold)" }}
-                aria-label="Buscar"
+                className="px-4 py-1.5 rounded-r-md text-sm font-medium flex items-center gap-1 hover:opacity-90 transition-opacity"
+                style={{
+                  backgroundColor: "var(--degase-gold)",
+                  color: "var(--degase-blue-dark)",
+                }}
+                aria-label="Executar busca"
               >
-                Buscar
+                <Search size={16} />
+                <span className="hidden sm:inline">Buscar</span>
               </button>
             </form>
             <button
@@ -129,12 +139,18 @@ export default function SiteHeader() {
                 type="search"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Buscar no site..."
-                className="flex-1 px-3 py-2 rounded-l-md text-sm text-gray-800"
-                aria-label="Campo de busca"
+                placeholder="Digite para buscar..."
+                className="flex-1 px-3 py-2 rounded-l-md text-sm focus:outline-none focus:ring-2"
+                style={{
+                  backgroundColor: "#FFFFFF",
+                  color: "#333333",
+                  borderRight: "1px solid var(--degase-gold)",
+                }}
+                aria-label="Campo de busca do site"
                 autoFocus
               />
-              <button type="submit" className="px-4 py-2 rounded-r-md text-sm font-medium" style={{ backgroundColor: "var(--degase-gold)" }}>
+              <button type="submit" className="px-4 py-2 rounded-r-md text-sm font-medium flex items-center gap-1 hover:opacity-90 transition-opacity" style={{ backgroundColor: "var(--degase-gold)", color: "var(--degase-blue-dark)" }}>
+                <Search size={16} />
                 Buscar
               </button>
             </form>

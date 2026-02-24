@@ -242,3 +242,35 @@ export const pageHistory = mysqlTable("page_history", {
 
 export type PageHistory = typeof pageHistory.$inferSelect;
 export type InsertPageHistory = typeof pageHistory.$inferInsert;
+
+
+/**
+ * Temas/Esquemas de cores do portal
+ */
+export const colorThemes = mysqlTable("color_themes", {
+  id: int("id").autoincrement().primaryKey(),
+  name: varchar("name", { length: 100 }).notNull(),
+  description: text("description"),
+  // Cores principais
+  primaryColor: varchar("primaryColor", { length: 7 }).default("#003366").notNull(), // Azul DEGASE
+  secondaryColor: varchar("secondaryColor", { length: 7 }).default("#D4AF37").notNull(), // Dourado
+  accentColor: varchar("accentColor", { length: 7 }).default("#0066CC").notNull(), // Azul claro
+  // Cores de texto
+  textColor: varchar("textColor", { length: 7 }).default("#333333").notNull(),
+  textLightColor: varchar("textLightColor", { length: 7 }).default("#666666").notNull(),
+  // Cores de fundo
+  backgroundColor: varchar("backgroundColor", { length: 7 }).default("#FFFFFF").notNull(),
+  surfaceColor: varchar("surfaceColor", { length: 7 }).default("#F5F5F5").notNull(),
+  // Cores de busca
+  searchBgColor: varchar("searchBgColor", { length: 7 }).default("#003366").notNull(),
+  searchTextColor: varchar("searchTextColor", { length: 7 }).default("#FFFFFF").notNull(),
+  searchBorderColor: varchar("searchBorderColor", { length: 7 }).default("#D4AF37").notNull(),
+  // Status
+  isActive: boolean("isActive").default(false).notNull(),
+  isDefault: boolean("isDefault").default(false).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type ColorTheme = typeof colorThemes.$inferSelect;
+export type InsertColorTheme = typeof colorThemes.$inferInsert;

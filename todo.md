@@ -126,3 +126,33 @@
 - [x] Integração no formulário de criação/edição de posts
 - [x] Worker/cron para publicar posts agendados automaticamente
 - [x] Testes do sistema de agendamento (4 testes passando)
+
+## Salvamento Automático de Rascunhos
+- [x] Hook useAutosave com debounce
+- [x] Integração no editor de posts
+- [x] Integração no editor de páginas
+- [x] Notificação visual de salvamento
+- [x] Recuperação de rascunho ao recarregar página
+
+## Pré-visualização Responsiva
+- [x] Componente ResponsivePreview
+- [x] Visualização desktop (1920px)
+- [x] Visualização tablet (768px)
+- [x] Visualização mobile (375px)
+- [x] Seletor de dispositivo
+- [x] Integração no editor de posts
+
+## Editor de Cores do Portal
+- [x] Adicionar tabela de temas no banco de dados
+- [x] Endpoints tRPC para gerenciar temas
+- [x] Página admin de customização de cores
+- [x] Seletor de cores para cada elemento
+- [x] Preview em tempo real das mudanças
+- [x] Aplicação dinâmica de cores no frontend
+
+## Melhorias no Campo de Busca
+- [x] Melhorar contraste do campo de busca
+- [x] Adicionar ícone de busca visível
+- [x] Customização de cores no admin
+- [x] Acessibilidade (ARIA labels)
+- [x] Placeholder mais descritivo
