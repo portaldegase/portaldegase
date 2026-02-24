@@ -6,13 +6,11 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import * as db from "./db";
 
-// Admin-only procedure
 const adminProcedure = protectedProcedure.use(({ ctx, next }) => {
   if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN", message: "Acesso restrito a administradores" });
   return next({ ctx });
 });
 
-// Editor procedure (admin or user)
 const editorProcedure = protectedProcedure;
 
 function slugify(text: string): string {
@@ -30,7 +28,6 @@ export const appRouter = router({
     }),
   }),
 
-  // ==================== CATEGORIES ====================
   categories: router({
     list: publicProcedure.query(async () => db.listCategories()),
     getBySlug: publicProcedure.input(z.object({ slug: z.string() })).query(async ({ input }) => db.getCategoryBySlug(input.slug)),
@@ -61,7 +58,6 @@ export const appRouter = router({
     delete: adminProcedure.input(z.object({ id: z.number() })).mutation(async ({ input }) => db.deleteCategory(input.id)),
   }),
 
-  // ==================== TAGS ====================
   tags: router({
     list: publicProcedure.query(async () => db.listTags()),
     create: editorProcedure.input(z.object({
@@ -74,7 +70,6 @@ export const appRouter = router({
     delete: adminProcedure.input(z.object({ id: z.number() })).mutation(async ({ input }) => db.deleteTag(input.id)),
   }),
 
-  // ==================== POSTS ====================
   posts: router({
     list: publicProcedure.input(z.object({
       status: z.string().optional(),
@@ -138,7 +133,6 @@ export const appRouter = router({
     delete: adminProcedure.input(z.object({ id: z.number() })).mutation(async ({ input }) => db.deletePost(input.id)),
   }),
 
-  // ==================== PAGES ====================
   pages: router({
     list: publicProcedure.input(z.object({
       status: z.string().optional(),
@@ -183,7 +177,6 @@ export const appRouter = router({
     delete: adminProcedure.input(z.object({ id: z.number() })).mutation(async ({ input }) => db.deletePage(input.id)),
   }),
 
-  // ==================== BANNERS ====================
   banners: router({
     list: publicProcedure.input(z.object({ activeOnly: z.boolean().optional() }).optional()).query(async ({ input }) => db.listBanners(input?.activeOnly ?? false)),
     create: adminProcedure.input(z.object({
@@ -206,7 +199,6 @@ export const appRouter = router({
     delete: adminProcedure.input(z.object({ id: z.number() })).mutation(async ({ input }) => db.deleteBanner(input.id)),
   }),
 
-  // ==================== VIDEOS ====================
   videos: router({
     list: publicProcedure.input(z.object({ activeOnly: z.boolean().optional() }).optional()).query(async ({ input }) => db.listVideos(input?.activeOnly ?? false)),
     create: adminProcedure.input(z.object({
@@ -230,7 +222,6 @@ export const appRouter = router({
     delete: adminProcedure.input(z.object({ id: z.number() })).mutation(async ({ input }) => db.deleteVideo(input.id)),
   }),
 
-  // ==================== TRANSPARENCY ====================
   transparency: router({
     list: publicProcedure.input(z.object({ section: z.string().optional() }).optional()).query(async ({ input }) => db.listTransparencyItems(input?.section)),
     create: adminProcedure.input(z.object({
@@ -254,7 +245,6 @@ export const appRouter = router({
     delete: adminProcedure.input(z.object({ id: z.number() })).mutation(async ({ input }) => db.deleteTransparencyItem(input.id)),
   }),
 
-  // ==================== UNITS ====================
   units: router({
     list: publicProcedure.input(z.object({ type: z.string().optional() }).optional()).query(async ({ input }) => db.listUnits(input?.type)),
     create: adminProcedure.input(z.object({
@@ -282,7 +272,6 @@ export const appRouter = router({
     delete: adminProcedure.input(z.object({ id: z.number() })).mutation(async ({ input }) => db.deleteUnit(input.id)),
   }),
 
-  // ==================== SITE CONFIG ====================
   config: router({
     get: publicProcedure.input(z.object({ key: z.string() })).query(async ({ input }) => db.getSiteConfig(input.key)),
     getAll: publicProcedure.query(async () => db.getAllSiteConfig()),
@@ -293,12 +282,10 @@ export const appRouter = router({
     })).mutation(async ({ input }) => db.setSiteConfig(input.key, input.value, input.description)),
   }),
 
-  // ==================== SEARCH ====================
   search: router({
     query: publicProcedure.input(z.object({ q: z.string().min(1), limit: z.number().optional() })).query(async ({ input }) => db.searchContent(input.q, input.limit)),
   }),
 
-  // ==================== UPLOAD ====================
   upload: router({
     image: editorProcedure.input(z.object({
       file: z.instanceof(Buffer),
@@ -326,6 +313,24 @@ export const appRouter = router({
         throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Erro ao fazer upload da imagem' });
       }
     }),
+  }),
+
+  admin: router({
+    getSiteConfig: adminProcedure.input(z.object({ key: z.string() })).query(async ({ input }) => db.getSiteConfig(input.key)),
+    getAllSiteConfig: adminProcedure.query(async () => db.getAllSiteConfig()),
+    setSiteConfig: adminProcedure.input(z.object({
+      key: z.string().min(1),
+      value: z.string(),
+      description: z.string().optional(),
+    })).mutation(async ({ input }) => db.setSiteConfig(input.key, input.value, input.description)),
+    listUsers: adminProcedure.query(async () => db.listUsers()),
+    getUserById: adminProcedure.input(z.object({ id: z.number() })).query(async ({ input }) => db.getUserById(input.id)),
+    updateUserRole: adminProcedure.input(z.object({
+      id: z.number(),
+      role: z.enum(['user', 'admin', 'contributor']),
+      categoryId: z.number().optional(),
+    })).mutation(async ({ input }) => db.updateUserRole(input.id, input.role, input.categoryId)),
+    deleteUser: adminProcedure.input(z.object({ id: z.number() })).mutation(async ({ input }) => db.deleteUser(input.id)),
   }),
 });
 

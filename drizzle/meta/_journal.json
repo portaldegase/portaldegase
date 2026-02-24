@@ -15,6 +15,13 @@
       "when": 1771893377710,
       "tag": "0001_lively_chat",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1771952433916,
+      "tag": "0002_glamorous_warpath",
+      "breakpoints": true
     }
   ]
 }

@@ -88,3 +88,23 @@
 - [x] Adicionar controle de redimensionamento
 - [x] Integrar editor no fluxo de upload
 - [x] Testes de edição de imagens (46 testes passando)
+
+## Edição de Páginas Prontas
+- [x] Permitir edição de páginas institucionais no menu do CMS
+- [x] Listagem de páginas editáveis no painel admin
+
+## Administração Geral
+- [x] Criar página de configurações gerais do portal
+- [x] Permitir editar título do portal
+- [x] Permitir editar favicon
+- [x] Permitir editar logo
+- [x] Permitir editar texto do rodapé
+- [x] Salvar configurações no banco de dados
+
+## Perfil de Contribuidor
+- [x] Adicionar role 'contributor' ao schema
+- [x] Adicionar categoryId ao schema de usuários
+- [x] Implementar controle de acesso por categoria
+- [x] Contributors só podem editar notícias de sua categoria
+- [x] Apenas admin pode postar em todas as categorias
+- [x] Página de gerenciamento de contribuidores (admin)

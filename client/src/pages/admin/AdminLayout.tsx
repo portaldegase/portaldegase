@@ -18,6 +18,8 @@ const navItems = [
   { href: "/admin/videos", label: "Vídeos", icon: Video },
   { href: "/admin/unidades", label: "Unidades", icon: Building2 },
   { href: "/admin/transparencia", label: "Transparência", icon: Shield },
+  { href: "/admin/usuarios", label: "Usuários", icon: Shield },
+  { href: "/admin/configuracoes", label: "Configurações", icon: Settings },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {

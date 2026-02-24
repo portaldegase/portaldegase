@@ -370,3 +370,29 @@ export async function searchContent(query: string, limit = 20) {
   ]);
   return { posts: postResults, pages: pageResults };
 }
+
+// ==================== USERS MANAGEMENT ====================
+export async function listUsers() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(users).orderBy(users.createdAt);
+}
+
+export async function getUserById(id: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(users).where(eq(users.id, id)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function updateUserRole(id: number, role: string, categoryId?: number) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  await db.update(users).set({ role: role as any, categoryId }).where(eq(users.id, id));
+}
+
+export async function deleteUser(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  await db.delete(users).where(eq(users.id, id));
+}

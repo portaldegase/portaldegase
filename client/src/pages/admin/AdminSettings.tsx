@@ -1,0 +1,204 @@
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Loader2, Save, AlertCircle } from "lucide-react";
+import { trpc } from "@/lib/trpc";
+import { toast } from "sonner";
+
+export default function AdminSettings() {
+  const [isSaving, setIsSaving] = useState(false);
+  const [settings, setSettings] = useState({
+    siteTitle: "",
+    siteDescription: "",
+    footerText: "",
+    contactEmail: "",
+    contactPhone: "",
+    favicon: "",
+    logo: "",
+  });
+
+  const getAllConfig = trpc.admin.getAllSiteConfig.useQuery();
+  const setSiteConfig = trpc.admin.setSiteConfig.useMutation({
+    onSuccess: () => {
+      toast.success("Configurações salvas com sucesso!");
+      getAllConfig.refetch();
+    },
+    onError: (error) => {
+      toast.error(`Erro: ${error.message}`);
+    },
+  });
+
+  useEffect(() => {
+    if (getAllConfig.data) {
+      const configMap: Record<string, string> = {};
+      getAllConfig.data.forEach((item) => {
+        configMap[item.configKey] = item.configValue || "";
+      });
+      setSettings({
+        siteTitle: configMap["siteTitle"] || "",
+        siteDescription: configMap["siteDescription"] || "",
+        footerText: configMap["footerText"] || "",
+        contactEmail: configMap["contactEmail"] || "",
+        contactPhone: configMap["contactPhone"] || "",
+        favicon: configMap["favicon"] || "",
+        logo: configMap["logo"] || "",
+      });
+    }
+  }, [getAllConfig.data]);
+
+  const handleChange = (key: string, value: string) => {
+    setSettings((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      const configKeys = Object.keys(settings) as (keyof typeof settings)[];
+      for (const key of configKeys) {
+        await setSiteConfig.mutateAsync({
+          key,
+          value: settings[key],
+          description: `Configuração: ${key}`,
+        });
+      }
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  if (getAllConfig.isLoading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <Loader2 className="animate-spin" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold">Configurações do Portal</h1>
+        <p className="text-gray-600 mt-2">Gerencie as configurações gerais do site DEGASE</p>
+      </div>
+
+      <div className="grid gap-6">
+        {/* Site Identity */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Identidade do Portal</CardTitle>
+            <CardDescription>Título, descrição e branding do site</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium mb-2">Título do Portal</label>
+              <Input
+                value={settings.siteTitle}
+                onChange={(e) => handleChange("siteTitle", e.target.value)}
+                placeholder="DEGASE - Departamento Geral de Ações Socioeducativas"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2">Descrição do Portal</label>
+              <Textarea
+                value={settings.siteDescription}
+                onChange={(e) => handleChange("siteDescription", e.target.value)}
+                placeholder="Descrição breve do portal..."
+                rows={3}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2">URL do Logo</label>
+              <Input
+                value={settings.logo}
+                onChange={(e) => handleChange("logo", e.target.value)}
+                placeholder="https://exemplo.com/logo.png"
+              />
+              {settings.logo && (
+                <div className="mt-2">
+                  <img src={settings.logo} alt="Logo preview" className="h-16 object-contain" />
+                </div>
+              )}
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2">URL do Favicon</label>
+              <Input
+                value={settings.favicon}
+                onChange={(e) => handleChange("favicon", e.target.value)}
+                placeholder="https://exemplo.com/favicon.ico"
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Contact Information */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Informações de Contato</CardTitle>
+            <CardDescription>Dados de contato exibidos no site</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium mb-2">Email de Contato</label>
+              <Input
+                type="email"
+                value={settings.contactEmail}
+                onChange={(e) => handleChange("contactEmail", e.target.value)}
+                placeholder="contato@degase.rj.gov.br"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2">Telefone de Contato</label>
+              <Input
+                value={settings.contactPhone}
+                onChange={(e) => handleChange("contactPhone", e.target.value)}
+                placeholder="(21) 2534-5000"
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Footer */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Rodapé</CardTitle>
+            <CardDescription>Texto exibido no rodapé do site</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div>
+              <label className="block text-sm font-medium mb-2">Texto do Rodapé</label>
+              <Textarea
+                value={settings.footerText}
+                onChange={(e) => handleChange("footerText", e.target.value)}
+                placeholder="Texto do rodapé..."
+                rows={4}
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Save Button */}
+        <div className="flex justify-end gap-2">
+          <Button
+            onClick={handleSave}
+            disabled={isSaving || setSiteConfig.isPending}
+            style={{ backgroundColor: "var(--degase-blue-dark)" }}
+          >
+            {isSaving || setSiteConfig.isPending ? (
+              <>
+                <Loader2 size={16} className="mr-2 animate-spin" />
+                Salvando...
+              </>
+            ) : (
+              <>
+                <Save size={16} className="mr-2" />
+                Salvar Configurações
+              </>
+            )}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
