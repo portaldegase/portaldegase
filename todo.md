@@ -116,3 +116,13 @@
 - [x] Componentes UI para visualizar histórico
 - [x] Modal de visualização de versões
 - [x] Testes do sistema de histórico (38 testes passando)
+
+## Agendamento de Publicação
+- [x] Adicionar campos de agendamento ao schema (scheduledAt, isScheduled)
+- [x] Migração do banco de dados
+- [x] Funções de banco de dados para agendamento
+- [x] Endpoints tRPC para agendar e gerenciar publicações
+- [x] Componente PublishScheduler para seleção de data/hora
+- [x] Integração no formulário de criação/edição de posts
+- [x] Worker/cron para publicar posts agendados automaticamente
+- [x] Testes do sistema de agendamento (4 testes passando)

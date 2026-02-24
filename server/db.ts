@@ -560,3 +560,67 @@ export async function revertPageToVersion(pageId: number, historyId: number, edi
     updatedAt: new Date(),
   }).where(eq(pages.id, pageId));
 }
+
+
+// ==================== AGENDAMENTO DE POSTS ====================
+export async function schedulePost(postId: number, scheduledAt: Date) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  
+  await db.update(posts).set({
+    status: 'scheduled',
+    scheduledAt,
+    isScheduled: true,
+    updatedAt: new Date(),
+  }).where(eq(posts.id, postId));
+}
+
+export async function getScheduledPosts() {
+  const db = await getDb();
+  if (!db) return [];
+  
+  // Retorna posts agendados cuja data de publicação é menor ou igual a agora
+  return db.select().from(posts).where(
+    and(
+      eq(posts.status, 'scheduled'),
+      eq(posts.isScheduled, true),
+      sql`${posts.scheduledAt} <= NOW()`
+    )
+  ).orderBy(asc(posts.scheduledAt));
+}
+
+export async function publishScheduledPost(postId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  
+  await db.update(posts).set({
+    status: 'published',
+    publishedAt: new Date(),
+    isScheduled: false,
+    updatedAt: new Date(),
+  }).where(eq(posts.id, postId));
+}
+
+export async function cancelScheduledPost(postId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  
+  await db.update(posts).set({
+    status: 'draft',
+    scheduledAt: null,
+    isScheduled: false,
+    updatedAt: new Date(),
+  }).where(eq(posts.id, postId));
+}
+
+export async function getScheduledPostsForUser(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return db.select().from(posts).where(
+    and(
+      eq(posts.authorId, userId),
+      eq(posts.isScheduled, true)
+    )
+  ).orderBy(asc(posts.scheduledAt));
+}

@@ -63,8 +63,10 @@ export const posts = mysqlTable("posts", {
   featuredImage: text("featuredImage"),
   categoryId: int("categoryId"),
   authorId: int("authorId"),
-  status: mysqlEnum("status", ["draft", "published", "archived"]).default("draft").notNull(),
+  status: mysqlEnum("status", ["draft", "published", "archived", "scheduled"]).default("draft").notNull(),
   publishedAt: timestamp("publishedAt"),
+  scheduledAt: timestamp("scheduledAt"), // Data/hora agendada para publicação
+  isScheduled: boolean("isScheduled").default(false).notNull(),
   isFeatured: boolean("isFeatured").default(false).notNull(),
   viewCount: int("viewCount").default(0).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),

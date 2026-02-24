@@ -152,6 +152,38 @@ export const appRouter = router({
       }
       return db.deletePost(input.id);
     }),
+    schedule: editorProcedure.input(z.object({
+      id: z.number(),
+      scheduledAt: z.date(),
+    })).mutation(async ({ input, ctx }) => {
+      const post = await db.getPostById(input.id);
+      if (!post) throw new TRPCError({ code: 'NOT_FOUND', message: 'Post nao encontrado' });
+      if (ctx.user.role !== 'admin' && post.authorId !== ctx.user.id) {
+        throw new TRPCError({ code: 'FORBIDDEN', message: 'Voce nao tem permissao para agendar este post' });
+      }
+      if (input.scheduledAt <= new Date()) {
+        throw new TRPCError({ code: 'BAD_REQUEST', message: 'Data agendada deve ser no futuro' });
+      }
+      await db.schedulePost(input.id, input.scheduledAt);
+      return { success: true };
+    }),
+    cancelSchedule: editorProcedure.input(z.object({
+      id: z.number(),
+    })).mutation(async ({ input, ctx }) => {
+      const post = await db.getPostById(input.id);
+      if (!post) throw new TRPCError({ code: 'NOT_FOUND', message: 'Post nao encontrado' });
+      if (ctx.user.role !== 'admin' && post.authorId !== ctx.user.id) {
+        throw new TRPCError({ code: 'FORBIDDEN', message: 'Voce nao tem permissao para cancelar este agendamento' });
+      }
+      await db.cancelScheduledPost(input.id);
+      return { success: true };
+    }),
+    getScheduled: editorProcedure.query(async ({ ctx }) => {
+      if (ctx.user.role === 'admin') {
+        return db.listPosts({ status: 'scheduled' });
+      }
+      return { items: await db.getScheduledPostsForUser(ctx.user.id), total: 0 };
+    }),
   }),
 
   pages: router({
