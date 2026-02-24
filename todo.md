@@ -72,4 +72,12 @@
 - [x] Testes de autenticação e autorização
 
 ## Documentação
-- [ ] Manual de migração de ambientes (Manus → Homologação → Produção)
+- [x] Manual de migração de ambientes (Manus → Homologação → Produção)
+
+## Upload de Imagens
+- [x] Endpoint tRPC para upload de imagens (validação, armazenamento S3)
+- [x] Integração de upload no editor WYSIWYG TipTap
+- [x] Validação de tipo e tamanho de arquivo
+- [x] Preview de imagem durante upload
+- [x] Tratamento de erros de upload
+- [x] Testes do sistema de upload (14 testes passando)

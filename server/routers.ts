@@ -297,6 +297,36 @@ export const appRouter = router({
   search: router({
     query: publicProcedure.input(z.object({ q: z.string().min(1), limit: z.number().optional() })).query(async ({ input }) => db.searchContent(input.q, input.limit)),
   }),
+
+  // ==================== UPLOAD ====================
+  upload: router({
+    image: editorProcedure.input(z.object({
+      file: z.instanceof(Buffer),
+      filename: z.string(),
+      mimetype: z.string(),
+    })).mutation(async ({ input }) => {
+      const allowedMimes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+      if (!allowedMimes.includes(input.mimetype)) {
+        throw new TRPCError({ code: 'BAD_REQUEST', message: 'Tipo de arquivo nao permitido. Use JPEG, PNG, WebP ou GIF.' });
+      }
+      const maxSize = 5 * 1024 * 1024;
+      if (input.file.length > maxSize) {
+        throw new TRPCError({ code: 'BAD_REQUEST', message: 'Arquivo muito grande. Maximo 5MB.' });
+      }
+      try {
+        const { storagePut } = await import('./storage');
+        const timestamp = Date.now();
+        const randomStr = Math.random().toString(36).substring(2, 8);
+        const ext = input.filename.split('.').pop() || 'jpg';
+        const fileKey = `degase-cms/images/${timestamp}-${randomStr}.${ext}`;
+        const { url } = await storagePut(fileKey, input.file, input.mimetype);
+        return { url, success: true };
+      } catch (error) {
+        console.error('[Upload] Erro ao fazer upload:', error);
+        throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Erro ao fazer upload da imagem' });
+      }
+    }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;

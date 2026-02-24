@@ -12,7 +12,8 @@ import {
   Undo, Redo, Code, Minus
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
+import ImageUploadButton from "./ImageUploadButton";
 
 interface RichTextEditorProps {
   content: string;
@@ -21,6 +22,7 @@ interface RichTextEditorProps {
 }
 
 export default function RichTextEditor({ content, onChange, placeholder = "Escreva o conteúdo aqui..." }: RichTextEditorProps) {
+  const [showImageUpload, setShowImageUpload] = useState(false);
   const editor = useEditor({
     extensions: [
       StarterKit,
@@ -37,9 +39,13 @@ export default function RichTextEditor({ content, onChange, placeholder = "Escre
   });
 
   const addImage = useCallback(() => {
-    const url = window.prompt("URL da imagem:");
-    if (url && editor) {
+    setShowImageUpload(!showImageUpload);
+  }, [showImageUpload]);
+
+  const handleImageUpload = useCallback((url: string) => {
+    if (editor) {
       editor.chain().focus().setImage({ src: url }).run();
+      setShowImageUpload(false);
     }
   }, [editor]);
 
@@ -128,7 +134,7 @@ export default function RichTextEditor({ content, onChange, placeholder = "Escre
         <ToolButton onClick={addLink} active={editor.isActive("link")} title="Inserir Link">
           <Link2 size={16} />
         </ToolButton>
-        <ToolButton onClick={addImage} title="Inserir Imagem">
+        <ToolButton onClick={addImage} active={showImageUpload} title="Inserir Imagem">
           <ImageIcon size={16} />
         </ToolButton>
 
@@ -141,6 +147,13 @@ export default function RichTextEditor({ content, onChange, placeholder = "Escre
           <Redo size={16} />
         </ToolButton>
       </div>
+
+      {/* Image Upload Panel */}
+      {showImageUpload && (
+        <div className="p-3 border-t bg-gray-50">
+          <ImageUploadButton onImageUpload={handleImageUpload} />
+        </div>
+      )}
 
       {/* Editor Content */}
       <EditorContent editor={editor} className="prose-degase" />
