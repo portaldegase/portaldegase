@@ -1,0 +1,75 @@
+# DEGASE CMS - Project TODO
+
+## Banco de Dados e Schema
+- [x] Schema de categorias (notícias, comunicados, legislação, páginas)
+- [x] Schema de posts/conteúdo com suporte WYSIWYG
+- [x] Schema de tags para organização de conteúdo
+- [x] Schema de páginas institucionais
+- [x] Schema de banners/carrossel
+- [x] Schema de vídeos institucionais
+- [x] Schema de documentos de transparência
+- [x] Schema de unidades do DEGASE
+- [x] Schema de configurações do site
+
+## Backend - Routers tRPC
+- [x] CRUD de posts (notícias, comunicados)
+- [x] CRUD de categorias
+- [x] CRUD de tags
+- [x] CRUD de páginas institucionais
+- [x] CRUD de banners
+- [x] CRUD de vídeos
+- [x] CRUD de documentos de transparência
+- [x] CRUD de unidades
+- [x] Sistema de busca interna
+- [x] Gestão de configurações do site
+- [x] Controle de acesso por role (admin/user)
+
+## Frontend Público
+- [x] Header com barra gov.br, logo, busca
+- [x] Banner/carrossel principal
+- [x] Seção de notícias (grid 3+2 colunas)
+- [x] Seção de vídeos com embed YouTube
+- [x] Seção de transparência com grid de links
+- [x] Seção Links Úteis e Unidades
+- [x] Rodapé institucional com contato e redes sociais
+- [x] Página de notícia individual
+- [x] Página de listagem de notícias
+- [x] Página Sobre/Institucional
+- [x] Página de Serviços
+- [x] Página de Legislação
+- [x] Página de Transparência
+- [x] Página de Contato
+- [x] Sistema de busca com resultados
+- [x] Identidade visual azul/branco oficial
+
+## Painel Administrativo
+- [x] Dashboard com estatísticas
+- [x] Gerenciamento de notícias com editor WYSIWYG
+- [x] Gerenciamento de categorias e tags
+- [x] Gerenciamento de páginas institucionais
+- [x] Gerenciamento de banners
+- [x] Gerenciamento de vídeos
+- [x] Gerenciamento de documentos
+- [x] Gerenciamento de unidades
+- [x] Configurações do site
+
+## Acessibilidade WCAG 2.1
+- [x] Alto contraste
+- [x] Ajuste de tamanho de fonte
+- [x] Navegação por teclado
+- [x] Compatibilidade com leitores de tela (ARIA)
+- [x] Skip navigation links
+
+## LGPD e Segurança
+- [x] Política de Privacidade
+- [x] Termos de Uso
+- [x] Banner de cookies com gestão de consentimento
+- [x] Preparação SSL (headers de segurança)
+- [x] CSP headers
+
+## Testes
+- [x] Testes unitários para routers (32 testes passando)
+- [x] Testes de autenticação e autorização
+
+## Documentação
+- [ ] Manual de migração de ambientes (Manus → Homologação → Produção)
