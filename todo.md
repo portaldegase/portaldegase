@@ -81,3 +81,10 @@
 - [x] Preview de imagem durante upload
 - [x] Tratamento de erros de upload
 - [x] Testes do sistema de upload (14 testes passando)
+
+## Edição de Imagens
+- [x] Instalar biblioteca react-easy-crop
+- [x] Criar componente ImageEditor com crop
+- [x] Adicionar controle de redimensionamento
+- [x] Integrar editor no fluxo de upload
+- [x] Testes de edição de imagens (46 testes passando)
