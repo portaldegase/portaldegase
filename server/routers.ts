@@ -252,11 +252,11 @@ export const appRouter = router({
       await db.createPageHistory(id, {
         title: updated.title || page.title,
         content: updated.content || page.content,
-        excerpt: updated.excerpt || page.excerpt || null,
-        featuredImage: updated.featuredImage || page.featuredImage || null,
+        excerpt: updated.excerpt || page.excerpt,
+        featuredImage: updated.featuredImage || page.featuredImage,
         status: (updated.status || page.status) as 'draft' | 'published' | 'archived',
-        menuLabel: updated.menuLabel || page.menuLabel || null,
-        showInMenu: updated.showInMenu !== undefined ? updated.showInMenu : (page.showInMenu || false),
+        menuLabel: updated.menuLabel || page.menuLabel,
+        showInMenu: updated.showInMenu !== undefined ? updated.showInMenu : (page.showInMenu ?? false),
         editorId: ctx.user.id,
         changeDescription: changeDescription || 'Pagina atualizada',
       });

@@ -83,7 +83,7 @@ export default function SiteHeader() {
 
           {/* Logo */}
           <Link href="/" className="flex items-center gap-3" aria-label="DEGASE - Página Inicial">
-            <img src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663378282282/eQqARgEIiuikpAao.png" alt="DEGASE - Departamento Geral de Ações Socioeducativas" className="h-12 md:h-14 object-contain" />
+            <img src="https://www.rj.gov.br/degase/sites/default/files/brasao-degase-300.png" alt="DEGASE - Departamento Geral de Ações Socioeducativas" className="h-12 md:h-14 object-contain" />
             <div className="hidden sm:block">
               <div className="text-[10px] uppercase tracking-wider opacity-80">Governo do Estado</div>
               <div className="text-lg font-bold leading-tight">DEGASE</div>

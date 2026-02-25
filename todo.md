@@ -182,3 +182,29 @@
 - [x] Criacao de novas tags no editor
 - [x] Relacao muitos-para-muitos com posts
 - [x] Busca por tags
+
+## Upload de Logo e Favicon
+- [ ] Adicionar campos de URL de logo e favicon ao siteConfig
+- [ ] Componente de upload de logo no AdminSettings
+- [ ] Componente de upload de favicon no AdminSettings
+- [ ] Exibir logo no header e no CMS
+- [ ] Exibir favicon na página
+- [ ] Validação de tipo de arquivo
+
+## Painel de Análise de Dados
+- [ ] Tabela de analytics para rastrear visualizações
+- [ ] Endpoints tRPC para coletar dados de analytics
+- [ ] Página AdminAnalytics com gráficos
+- [ ] Mostrar posts mais populares
+- [ ] Mostrar engajamento por período
+- [ ] Mostrar tags mais usadas
+- [ ] Filtro por data
+
+## Compartilhamento em Redes Sociais
+- [ ] Configuração de credenciais de redes sociais no AdminSettings
+- [ ] Endpoints para compartilhar em Facebook
+- [ ] Endpoints para compartilhar em Twitter
+- [ ] Endpoints para compartilhar em Instagram
+- [ ] Compartilhamento automático ao publicar
+- [ ] Fila de compartilhamento
+- [ ] Log de compartilhamentos

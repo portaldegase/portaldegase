@@ -318,3 +318,38 @@ export const mediaLibrary = mysqlTable("media_library", {
 export type MediaLibrary = typeof mediaLibrary.$inferSelect;
 export type InsertMediaLibrary = typeof mediaLibrary.$inferInsert;
 
+
+
+/**
+ * Analytics - tracks page views and engagement
+ */
+export const analytics = mysqlTable("analytics", {
+  id: int("id").autoincrement().primaryKey(),
+  postId: int("postId"),
+  pageUrl: varchar("pageUrl", { length: 1024 }),
+  viewCount: int("viewCount").default(0).notNull(),
+  uniqueVisitors: int("uniqueVisitors").default(0).notNull(),
+  avgTimeOnPage: int("avgTimeOnPage").default(0).notNull(),
+  bounceRate: int("bounceRate").default(0).notNull(),
+  date: timestamp("date").defaultNow().notNull(),
+});
+
+export type Analytics = typeof analytics.$inferSelect;
+export type InsertAnalytics = typeof analytics.$inferInsert;
+
+/**
+ * Social Media Sharing - tracks and manages social media posts
+ */
+export const socialMediaShares = mysqlTable("social_media_shares", {
+  id: int("id").autoincrement().primaryKey(),
+  postId: int("postId").notNull(),
+  platform: varchar("platform", { length: 50 }).notNull(),
+  externalId: varchar("externalId", { length: 255 }),
+  status: varchar("status", { length: 50 }).default("pending").notNull(),
+  errorMessage: text("errorMessage"),
+  sharedAt: timestamp("sharedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type SocialMediaShare = typeof socialMediaShares.$inferSelect;
+export type InsertSocialMediaShare = typeof socialMediaShares.$inferInsert;

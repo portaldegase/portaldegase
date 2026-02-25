@@ -3,9 +3,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, Save, AlertCircle } from "lucide-react";
+import { Loader2, Save } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
+import { LogoUploadField } from "@/components/LogoUploadField";
+import { FaviconUploadField } from "@/components/FaviconUploadField";
 
 export default function AdminSettings() {
   const [isSaving, setIsSaving] = useState(false);
@@ -109,25 +111,12 @@ export default function AdminSettings() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">URL do Logo</label>
-              <Input
-                value={settings.logo}
-                onChange={(e) => handleChange("logo", e.target.value)}
-                placeholder="https://exemplo.com/logo.png"
-              />
-              {settings.logo && (
-                <div className="mt-2">
-                  <img src={settings.logo} alt="Logo preview" className="h-16 object-contain" />
-                </div>
-              )}
+              <label className="block text-sm font-medium mb-2">Logo do Portal</label>
+              <LogoUploadField value={settings.logo} onChange={(url) => handleChange("logo", url)} />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">URL do Favicon</label>
-              <Input
-                value={settings.favicon}
-                onChange={(e) => handleChange("favicon", e.target.value)}
-                placeholder="https://exemplo.com/favicon.ico"
-              />
+              <label className="block text-sm font-medium mb-2">Favicon do Portal</label>
+              <FaviconUploadField value={settings.favicon} onChange={(url) => handleChange("favicon", url)} />
             </div>
           </CardContent>
         </Card>
