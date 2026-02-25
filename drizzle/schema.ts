@@ -40,3 +40,30 @@ export const comments = mysqlTable("comments", {
 
 export type Comment = typeof comments.$inferSelect;
 export type InsertComment = typeof comments.$inferInsert;
+
+// ==================== ANALYTICS TABLE ====================
+export const analytics = mysqlTable("analytics", {
+  id: int("id").autoincrement().primaryKey(),
+  postId: int("postId").notNull(),
+  viewCount: int("viewCount").default(0).notNull(),
+  uniqueVisitors: int("uniqueVisitors").default(0).notNull(),
+  lastViewedAt: timestamp("lastViewedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Analytics = typeof analytics.$inferSelect;
+export type InsertAnalytics = typeof analytics.$inferInsert;
+
+// ==================== PAGE VIEWS TABLE ====================
+export const pageViews = mysqlTable("pageViews", {
+  id: int("id").autoincrement().primaryKey(),
+  postId: int("postId").notNull(),
+  viewedAt: timestamp("viewedAt").defaultNow().notNull(),
+  ipHash: varchar("ipHash", { length: 64 }),
+  userAgent: text("userAgent"),
+  referrer: text("referrer"),
+});
+
+export type PageView = typeof pageViews.$inferSelect;
+export type InsertPageView = typeof pageViews.$inferInsert;

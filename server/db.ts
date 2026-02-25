@@ -1,6 +1,6 @@
-import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, InsertComment, comments } from "../drizzle/schema";
+import { InsertUser, users, InsertComment, comments, InsertAnalytics, analytics, InsertPageView, pageViews } from "../drizzle/schema";
+import { eq, gt, desc, sql } from "drizzle-orm";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -126,4 +126,67 @@ export async function getPendingComments() {
   const db = await getDb();
   if (!db) return [];
   return db.select().from(comments).where(eq(comments.status, 'pending')).orderBy(comments.createdAt);
+}
+
+// ==================== ANALYTICS ====================
+export async function recordPageView(data: InsertPageView) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.insert(pageViews).values(data);
+  
+  // Update or create analytics record
+  const existing = await db.select().from(analytics).where(eq(analytics.postId, data.postId)).limit(1);
+  if (existing.length > 0) {
+    await db.update(analytics)
+      .set({
+        viewCount: sql`viewCount + 1`,
+        lastViewedAt: new Date(),
+      })
+      .where(eq(analytics.postId, data.postId));
+  } else {
+    await db.insert(analytics).values({
+      postId: data.postId,
+      viewCount: 1,
+      uniqueVisitors: 1,
+      lastViewedAt: new Date(),
+    });
+  }
+}
+
+export async function getPostAnalytics(postId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.select().from(analytics).where(eq(analytics.postId, postId)).limit(1);
+  return result[0];
+}
+
+export async function getTopPosts(limit: number = 10) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(analytics).orderBy(desc(analytics.viewCount)).limit(limit);
+}
+
+export async function getAnalyticsByDateRange(startDate: Date, endDate: Date) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(pageViews)
+    .where(sql`${pageViews.viewedAt} BETWEEN ${startDate} AND ${endDate}`)
+    .orderBy(desc(pageViews.viewedAt));
+}
+
+export async function getPostViewsLastDays(days: number = 30) {
+  const db = await getDb();
+  if (!db) return [];
+  const startDate = new Date();
+  startDate.setDate(startDate.getDate() - days);
+  
+  return db.select({
+    postId: pageViews.postId,
+    viewCount: sql<number>`COUNT(*) as viewCount`,
+    date: sql<string>`DATE(${pageViews.viewedAt}) as date`,
+  })
+  .from(pageViews)
+  .where(gt(pageViews.viewedAt, startDate))
+  .groupBy(pageViews.postId, sql`DATE(${pageViews.viewedAt})`)
+  .orderBy(desc(sql`DATE(${pageViews.viewedAt})`));
 }

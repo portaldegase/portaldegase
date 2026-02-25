@@ -8,6 +8,13 @@
       "when": 1772030236260,
       "tag": "0000_high_justin_hammer",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1772030641071,
+      "tag": "0001_typical_stingray",
+      "breakpoints": true
     }
   ]
 }
