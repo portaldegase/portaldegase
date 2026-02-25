@@ -4,28 +4,22 @@ CREATE TABLE `comments` (
 	`authorName` varchar(255) NOT NULL,
 	`authorEmail` varchar(320) NOT NULL,
 	`content` text NOT NULL,
-	`status` enum('pending','approved','rejected','spam') NOT NULL DEFAULT 'pending',
-	`moderatedBy` int,
-	`moderationReason` text,
+	`status` enum('pending','approved','rejected') NOT NULL DEFAULT 'pending',
 	`createdAt` timestamp NOT NULL DEFAULT (now()),
 	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
 	CONSTRAINT `comments_id` PRIMARY KEY(`id`)
 );
 --> statement-breakpoint
-CREATE TABLE `media_library` (
+CREATE TABLE `users` (
 	`id` int AUTO_INCREMENT NOT NULL,
-	`title` varchar(255) NOT NULL,
-	`description` text,
-	`url` text NOT NULL,
-	`fileKey` varchar(500) NOT NULL,
-	`fileType` enum('image','video') NOT NULL,
-	`mimeType` varchar(100) NOT NULL,
-	`fileSize` int,
-	`width` int,
-	`height` int,
-	`duration` int,
-	`uploadedBy` int NOT NULL,
+	`openId` varchar(64) NOT NULL,
+	`name` text,
+	`email` varchar(320),
+	`loginMethod` varchar(64),
+	`role` enum('user','admin') NOT NULL DEFAULT 'user',
 	`createdAt` timestamp NOT NULL DEFAULT (now()),
 	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
-	CONSTRAINT `media_library_id` PRIMARY KEY(`id`)
+	`lastSignedIn` timestamp NOT NULL DEFAULT (now()),
+	CONSTRAINT `users_id` PRIMARY KEY(`id`),
+	CONSTRAINT `users_openId_unique` UNIQUE(`openId`)
 );
