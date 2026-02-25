@@ -157,13 +157,19 @@ export async function createPost(data: InsertPost) {
   const db = await getDb();
   if (!db) throw new Error("DB not available");
   const result = await db.insert(posts).values(data);
-  return result[0].insertId;
+  const postId = result[0].insertId;
+  // Retornar o post criado
+  const post = await db.select().from(posts).where(eq(posts.id, postId)).limit(1);
+  return post[0];
 }
 
 export async function updatePost(id: number, data: Partial<InsertPost>) {
   const db = await getDb();
   if (!db) throw new Error("DB not available");
   await db.update(posts).set(data).where(eq(posts.id, id));
+  // Retornar o post atualizado
+  const post = await db.select().from(posts).where(eq(posts.id, id)).limit(1);
+  return post[0];
 }
 
 export async function deletePost(id: number) {
