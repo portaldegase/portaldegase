@@ -20,11 +20,7 @@ function BannerSection() {
             <h2 className="text-xl md:text-3xl font-bold text-black leading-tight" style={{display: 'none'}}>
               {activeBanners[currentBanner]?.title}
             </h2>
-            {activeBanners[currentBanner]?.subtitle && (
-              <p className="mt-2 text-sm md:text-base text-black/80">
-                {activeBanners[currentBanner]?.subtitle}
-              </p>
-            )}
+
           </div>
           {activeBanners[currentBanner]?.imageUrl && (
             <img
