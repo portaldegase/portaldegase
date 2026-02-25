@@ -30,7 +30,7 @@ function BannerSection() {
             <img
               src={activeBanners[currentBanner].imageUrl}
               alt={activeBanners[currentBanner].title}
-              className="hidden md:block h-24 lg:h-32 object-contain ml-6 rounded-lg"
+              className="hidden md:block h-24 lg:h-32 object-contain rounded-lg"
             />
           )}
         </div>

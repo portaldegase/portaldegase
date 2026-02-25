@@ -28,7 +28,7 @@ export default function SiteHeader() {
       </a>
 
       {/* Top Bar - Gov.br style */}
-      <div className="w-full text-white text-xs" style={{ backgroundColor: "var(--degase-blue-dark)" }}>
+      <div className="w-full text-white text-xs" style={{ backgroundColor: '#000000' }}>
         <div className="container flex items-center justify-between py-1.5">
           <div className="flex items-center gap-3">
             <a href="https://rj.gov.br" target="_blank" rel="noopener noreferrer" className="hover:underline font-medium" aria-label="Portal rj.gov.br">
