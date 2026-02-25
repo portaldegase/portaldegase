@@ -1,13 +1,15 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { Search, Menu, X, Eye, Plus, Minus, Instagram, Facebook, Twitter, Youtube } from "lucide-react";
+import { Search, Menu, X, Eye, Plus, Minus, Instagram, Facebook, Twitter, Youtube, Settings } from "lucide-react";
 import { useAccessibility } from "@/contexts/AccessibilityContext";
 import { useAuth } from "@/_core/hooks/useAuth";
+import { AccessibilityPanel } from "./AccessibilityPanel";
 
 export default function SiteHeader() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [accessibilityPanelOpen, setAccessibilityPanelOpen] = useState(false);
   const [, navigate] = useLocation();
   const { highContrast, toggleHighContrast, increaseFontSize, decreaseFontSize } = useAccessibility();
   const { user, isAuthenticated } = useAuth();
@@ -224,7 +226,22 @@ export default function SiteHeader() {
         >
           <Minus size={18} />
         </button>
+        <button
+          onClick={() => setAccessibilityPanelOpen(true)}
+          className="p-2 text-white rounded-l-md shadow-md text-xs"
+          style={{ backgroundColor: "var(--degase-blue-light)" }}
+          aria-label="Abrir painel de acessibilidade completo"
+          title="Acessibilidade"
+        >
+          <Settings size={18} />
+        </button>
       </div>
+
+      {/* Accessibility Panel Modal */}
+      <AccessibilityPanel
+        isOpen={accessibilityPanelOpen}
+        onClose={() => setAccessibilityPanelOpen(false)}
+      />
     </header>
   );
 }
