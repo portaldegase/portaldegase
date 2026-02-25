@@ -1,27 +1,5 @@
 {
   "version": "7",
   "dialect": "mysql",
-  "entries": [
-    {
-      "idx": 0,
-      "version": "5",
-      "when": 1772030236260,
-      "tag": "0000_high_justin_hammer",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "5",
-      "when": 1772030641071,
-      "tag": "0001_typical_stingray",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "5",
-      "when": 1772032207925,
-      "tag": "0002_aberrant_mister_sinister",
-      "breakpoints": true
-    }
-  ]
+  "entries": []
 }
