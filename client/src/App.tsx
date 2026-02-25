@@ -4,36 +4,115 @@ import NotFound from "@/pages/NotFound";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
+import { AccessibilityProvider } from "./contexts/AccessibilityContext";
+
+// Public pages
 import Home from "./pages/Home";
+import About from "./pages/About";
+import Services from "./pages/Services";
+import Legislation from "./pages/Legislation";
+import Transparency from "./pages/Transparency";
+import Contact from "./pages/Contact";
+import Units from "./pages/Units";
+import NewsList from "./pages/NewsList";
+import NewsDetail from "./pages/NewsDetail";
+import SearchResults from "./pages/SearchResults";
+import InstitutionalPage from "./pages/InstitutionalPage";
+import Privacy from "./pages/Privacy";
+import Terms from "./pages/Terms";
+
+// Admin pages
+import AdminLayout from "./pages/admin/AdminLayout";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminPosts from "./pages/admin/AdminPosts";
+import AdminCategories from "./pages/admin/AdminCategories";
+import AdminPages from "./pages/admin/AdminPages";
+import AdminBanners from "./pages/admin/AdminBanners";
+import AdminVideos from "./pages/admin/AdminVideos";
+import AdminUnits from "./pages/admin/AdminUnits";
+import AdminTransparency from "./pages/admin/AdminTransparency";
+import AdminSettings from "./pages/admin/AdminSettings";
+import AdminUsers from "./pages/admin/AdminUsers";
+
+// Layout components
+import SiteHeader from "./components/SiteHeader";
+import SiteFooter from "./components/SiteFooter";
+import CookieBanner from "./components/CookieBanner";
+
+function PublicLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="min-h-screen flex flex-col bg-white">
+      <SiteHeader />
+      <div className="flex-1">{children}</div>
+      <SiteFooter />
+      <CookieBanner />
+    </div>
+  );
+}
+
+function PublicPage({ component: Component }: { component: React.ComponentType }) {
+  return (
+    <PublicLayout>
+      <Component />
+    </PublicLayout>
+  );
+}
+
+function AdminPage({ component: Component }: { component: React.ComponentType }) {
+  return (
+    <AdminLayout>
+      <Component />
+    </AdminLayout>
+  );
+}
 
 function Router() {
-  // make sure to consider if you need authentication for certain routes
   return (
     <Switch>
-      <Route path={"/"} component={Home} />
-      <Route path={"/404"} component={NotFound} />
-      {/* Final fallback route */}
+      {/* Public routes */}
+      <Route path="/">{() => <PublicPage component={Home} />}</Route>
+      <Route path="/sobre">{() => <PublicPage component={About} />}</Route>
+      <Route path="/servicos">{() => <PublicPage component={Services} />}</Route>
+      <Route path="/legislacao">{() => <PublicPage component={Legislation} />}</Route>
+      <Route path="/transparencia">{() => <PublicPage component={Transparency} />}</Route>
+      <Route path="/contato">{() => <PublicPage component={Contact} />}</Route>
+      <Route path="/unidades">{() => <PublicPage component={Units} />}</Route>
+      <Route path="/noticias">{() => <PublicPage component={NewsList} />}</Route>
+      <Route path="/noticias/:slug">{() => <PublicPage component={NewsDetail} />}</Route>
+      <Route path="/busca">{() => <PublicPage component={SearchResults} />}</Route>
+      <Route path="/privacidade">{() => <PublicPage component={Privacy} />}</Route>
+      <Route path="/termos">{() => <PublicPage component={Terms} />}</Route>
+      <Route path="/pagina/:slug">{() => <PublicPage component={InstitutionalPage} />}</Route>
+
+      {/* Admin routes */}
+      <Route path="/admin">{() => <AdminPage component={AdminDashboard} />}</Route>
+      <Route path="/admin/posts">{() => <AdminPage component={AdminPosts} />}</Route>
+      <Route path="/admin/categorias">{() => <AdminPage component={AdminCategories} />}</Route>
+      <Route path="/admin/paginas">{() => <AdminPage component={AdminPages} />}</Route>
+      <Route path="/admin/banners">{() => <AdminPage component={AdminBanners} />}</Route>
+      <Route path="/admin/videos">{() => <AdminPage component={AdminVideos} />}</Route>
+      <Route path="/admin/unidades">{() => <AdminPage component={AdminUnits} />}</Route>
+      <Route path="/admin/transparencia">{() => <AdminPage component={AdminTransparency} />}</Route>
+      <Route path="/admin/usuarios">{() => <AdminPage component={AdminUsers} />}</Route>
+      <Route path="/admin/configuracoes">{() => <AdminPage component={AdminSettings} />}</Route>
+
+      {/* 404 */}
+      <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>
   );
 }
 
-// NOTE: About Theme
-// - First choose a default theme according to your design style (dark or light bg), than change color palette in index.css
-//   to keep consistent foreground/background color across components
-// - If you want to make theme switchable, pass `switchable` ThemeProvider and use `useTheme` hook
-
 function App() {
   return (
     <ErrorBoundary>
-      <ThemeProvider
-        defaultTheme="light"
-        // switchable
-      >
-        <TooltipProvider>
-          <Toaster />
-          <Router />
-        </TooltipProvider>
+      <ThemeProvider defaultTheme="light">
+        <AccessibilityProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Router />
+          </TooltipProvider>
+        </AccessibilityProvider>
       </ThemeProvider>
     </ErrorBoundary>
   );
