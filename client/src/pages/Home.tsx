@@ -1,44 +1,103 @@
 import { trpc } from "@/lib/trpc";
 import { Link } from "wouter";
-import { ArrowRight, Play, Building2, FileText, Users, Scale, DollarSign, HelpCircle, Database, Shield, Handshake, ClipboardList } from "lucide-react";
+import { ArrowRight, Play, Building2, FileText, Users, Scale, DollarSign, HelpCircle, Database, Shield, Handshake, ClipboardList, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 
 function BannerSection() {
   const { data: banners } = trpc.banners.list.useQuery({ activeOnly: true });
   const [currentBanner, setCurrentBanner] = useState(0);
+  const [autoPlay, setAutoPlay] = useState(true);
 
   const activeBanners = banners && banners.length > 0 ? banners : [
     { id: 0, title: "Escola de Gestão Socioeducativa Paulo Freire", subtitle: "Formação continuada para profissionais do sistema socioeducativo", imageUrl: "https://files.manuscdn.com/user_upload_by_module/session_file/310519663378282282/uNiLAdRNGIEljZJZ.webp", linkUrl: "#" }
   ];
 
-  return (
-    <section aria-label="Banners em destaque" className="relative">
-      <div className="w-full overflow-hidden" style={{ backgroundColor: '#ffffff' }}>
-        <div className="container py-6 md:py-10 flex items-center">
-          <div className="flex-1">
-            <h2 className="text-xl md:text-3xl font-bold text-black leading-tight" style={{display: 'none'}}>
-              {activeBanners[currentBanner]?.title}
-            </h2>
+  // Auto-play do carrossel
+  useEffect(() => {
+    if (!autoPlay || activeBanners.length <= 1) return;
+    
+    const interval = setInterval(() => {
+      setCurrentBanner((prev) => (prev + 1) % activeBanners.length);
+    }, 5000); // Muda a cada 5 segundos
+    
+    return () => clearInterval(interval);
+  }, [autoPlay, activeBanners.length]);
 
-          </div>
+  const goToPrevious = () => {
+    setCurrentBanner((prev) => (prev - 1 + activeBanners.length) % activeBanners.length);
+    setAutoPlay(false);
+  };
+
+  const goToNext = () => {
+    setCurrentBanner((prev) => (prev + 1) % activeBanners.length);
+    setAutoPlay(false);
+  };
+
+  return (
+    <section aria-label="Banners em destaque" className="relative w-full">
+      <div className="w-full overflow-hidden bg-white">
+        <div className="relative w-full h-64 md:h-96 lg:h-[500px] flex items-center justify-center">
+          {/* Imagem do banner com transição suave */}
           {activeBanners[currentBanner]?.imageUrl && (
             <img
+              key={currentBanner}
               src={activeBanners[currentBanner].imageUrl}
               alt={activeBanners[currentBanner].title}
-              className="hidden md:block h-24 lg:h-32 object-contain rounded-lg" style={{width: '768px', height: '176px', maxWidth: '100%'}}
+              className="w-full h-full object-cover transition-opacity duration-500"
             />
+          )}
+          
+          {/* Overlay com gradiente */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
+          
+          {/* Título do banner */}
+          {activeBanners[currentBanner]?.title && (
+            <div className="absolute bottom-0 left-0 right-0 p-4 md:p-8 text-white">
+              <h2 className="text-2xl md:text-4xl font-bold leading-tight">
+                {activeBanners[currentBanner].title}
+              </h2>
+            </div>
+          )}
+          
+          {/* Botões de navegação */}
+          {activeBanners.length > 1 && (
+            <>
+              <button
+                onClick={goToPrevious}
+                className="absolute left-4 top-1/2 -translate-y-1/2 z-10 bg-white/30 hover:bg-white/50 text-white p-2 rounded-full transition-colors"
+                aria-label="Banner anterior"
+              >
+                <ChevronLeft size={24} />
+              </button>
+              <button
+                onClick={goToNext}
+                className="absolute right-4 top-1/2 -translate-y-1/2 z-10 bg-white/30 hover:bg-white/50 text-white p-2 rounded-full transition-colors"
+                aria-label="Próximo banner"
+              >
+                <ChevronRight size={24} />
+              </button>
+            </>
           )}
         </div>
       </div>
+      
+      {/* Indicadores de posição */}
       {activeBanners.length > 1 && (
-        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-2">
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-20">
           {activeBanners.map((_, i) => (
             <button
               key={i}
-              onClick={() => setCurrentBanner(i)}
-              className={`w-2.5 h-2.5 rounded-full transition-colors ${i === currentBanner ? "bg-white" : "bg-white/50"}`}
-              aria-label={`Banner ${i + 1}`}
+              onClick={() => {
+                setCurrentBanner(i);
+                setAutoPlay(false);
+              }}
+              className={`transition-all duration-300 rounded-full ${
+                i === currentBanner
+                  ? "bg-white w-8 h-2"
+                  : "bg-white/50 w-2 h-2 hover:bg-white/70"
+              }`}
+              aria-label={`Ir para banner ${i + 1}`}
             />
           ))}
         </div>
