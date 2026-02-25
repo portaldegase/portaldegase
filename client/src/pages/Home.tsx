@@ -14,7 +14,7 @@ function BannerSection() {
 
   return (
     <section aria-label="Banners em destaque" className="relative">
-      <div className="w-full overflow-hidden" style={{ backgroundColor: "var(--degase-gold)" }}>
+      <div className="w-full overflow-hidden" style={{ backgroundColor: '#ffffff' }}>
         <div className="container py-6 md:py-10 flex items-center">
           <div className="flex-1">
             <h2 className="text-xl md:text-3xl font-bold text-black leading-tight" style={{display: 'none'}}>
@@ -30,7 +30,7 @@ function BannerSection() {
             <img
               src={activeBanners[currentBanner].imageUrl}
               alt={activeBanners[currentBanner].title}
-              className="hidden md:block h-24 lg:h-32 object-contain rounded-lg"
+              className="hidden md:block h-24 lg:h-32 object-contain rounded-lg" style={{width: '768px', height: '176px', maxWidth: '100%'}}
             />
           )}
         </div>
