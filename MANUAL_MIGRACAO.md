@@ -35,9 +35,9 @@ mysql --version   # Deve ser 8.0.0 ou superior
 # Navegar para o diretório de aplicações
 cd /var/www
 
-# Clonar o repositório (substitua pela URL do seu repositório)
-git clone https://github.com/seu-usuario/degase-cms-project.git
-cd degase-cms-project
+# Clonar o repositório
+git clone https://github.com/portaldegase/portaldegase.git portaldegase
+cd /var/www/portaldegase
 ```
 
 ### 1.2 Instalar Dependências
@@ -152,18 +152,36 @@ curl http://localhost:3000
 curl http://seu-ip-servidor:3000
 ```
 
-O site deve estar acessível em: `http://seu-dominio.com:3000`
+O site deve estar acessível em: `http://portaldegase.com.br:3000`
 
 ---
 
 ## Fase 3: Configuração de Proxy Reverso (Nginx/Apache)
+
+### 3.0 Configuração RedHat/CentOS com SELinux
+
+Antes de configurar o proxy reverso, configure o SELinux para permitir conexões:
+
+```bash
+# Permitir que Nginx se conecte ao localhost:3000
+sudo setsebool -P httpd_can_network_connect on
+
+# Verificar se a configuração foi aplicada
+getsebool httpd_can_network_connect
+
+# Se usar firewalld (RedHat/CentOS)
+sudo firewall-cmd --permanent --add-service=http
+sudo firewall-cmd --permanent --add-service=https
+sudo firewall-cmd --reload
+```
 
 ### 3.1 Configurar Nginx (Recomendado)
 
 Crie um arquivo de configuração Nginx:
 
 ```bash
-sudo nano /etc/nginx/sites-available/degase-cms
+# No RedHat/CentOS, usar /etc/nginx/conf.d/ em vez de /etc/nginx/sites-available/
+sudo nano /etc/nginx/conf.d/portaldegase.conf
 ```
 
 Adicione a seguinte configuração:
@@ -171,7 +189,7 @@ Adicione a seguinte configuração:
 ```nginx
 server {
     listen 80;
-    server_name seu-dominio.com www.seu-dominio.com;
+    server_name portaldegase.com.br www.portaldegase.com.br;
 
     # Logs
     access_log /var/log/nginx/degase-cms-access.log;
@@ -210,7 +228,8 @@ server {
 Ativar configuração:
 
 ```bash
-sudo ln -s /etc/nginx/sites-available/degase-cms /etc/nginx/sites-enabled/
+# No RedHat/CentOS, o arquivo em /etc/nginx/conf.d/ é automaticamente incluído
+# Apenas teste e reinicie o Nginx
 sudo nginx -t
 sudo systemctl restart nginx
 ```
@@ -220,13 +239,14 @@ sudo systemctl restart nginx
 Se preferir Apache, crie um arquivo VirtualHost:
 
 ```bash
-sudo nano /etc/apache2/sites-available/degase-cms.conf
+# No RedHat/CentOS, usar /etc/httpd/conf.d/ em vez de /etc/apache2/sites-available/
+sudo nano /etc/httpd/conf.d/portaldegase.conf
 ```
 
 ```apache
 <VirtualHost *:80>
-    ServerName seu-dominio.com
-    ServerAlias www.seu-dominio.com
+    ServerName portaldegase.com.br
+    ServerAlias www.portaldegase.com.br
 
     ProxyPreserveHost On
     ProxyPass / http://localhost:3000/
@@ -241,11 +261,10 @@ sudo nano /etc/apache2/sites-available/degase-cms.conf
 Ativar:
 
 ```bash
-sudo a2enmod proxy
-sudo a2enmod proxy_http
-sudo a2ensite degase-cms
-sudo apache2ctl configtest
-sudo systemctl restart apache2
+# No RedHat/CentOS, usar httpd em vez de apache2
+# Os módulos proxy já estão habilitados por padrão
+sudo httpd -t
+sudo systemctl restart httpd
 ```
 
 ---
@@ -335,7 +354,7 @@ Quando você adquirir um certificado SSL, siga estas instruções:
 sudo apt-get install certbot python3-certbot-nginx
 
 # Gerar certificado
-sudo certbot certonly --nginx -d seu-dominio.com -d www.seu-dominio.com
+sudo certbot certonly --nginx -d portaldegase.com.br -d www.portaldegase.com.br
 
 # Renovação automática
 sudo systemctl enable certbot.timer
@@ -353,14 +372,14 @@ Obtenha o certificado do seu provedor e coloque os arquivos em:
 # Redirecionar HTTP para HTTPS
 server {
     listen 80;
-    server_name seu-dominio.com www.seu-dominio.com;
+    server_name portaldegase.com.br www.portaldegase.com.br;
     return 301 https://$server_name$request_uri;
 }
 
 # Configuração HTTPS
 server {
     listen 443 ssl http2;
-    server_name seu-dominio.com www.seu-dominio.com;
+    server_name portaldegase.com.br www.portaldegase.com.br;
 
     # Certificados SSL
     ssl_certificate /etc/ssl/certs/seu-dominio.crt;
@@ -456,7 +475,7 @@ npm run db:push -- --verbose
 openssl x509 -in /etc/ssl/certs/seu-dominio.crt -text -noout
 
 # Testar SSL
-openssl s_client -connect seu-dominio.com:443
+openssl s_client -connect portaldegase.com.br:443
 ```
 
 ### Problema: Aplicação lenta ou travando
