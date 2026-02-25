@@ -49,7 +49,7 @@ export default function CookieBanner() {
           <Button variant="outline" size="sm" onClick={reject} className="text-white border-white/30 hover:bg-white/10 bg-transparent">
             Rejeitar
           </Button>
-          <Button size="sm" onClick={accept} style={{ backgroundColor: "var(--degase-gold)" }} className="text-black font-medium hover:opacity-90">
+          <Button size="sm" onClick={accept} style={{ backgroundColor: '#4e7dee', color: '#ffffff' }} className="text-black font-medium hover:opacity-90">
             Aceitar
           </Button>
         </div>

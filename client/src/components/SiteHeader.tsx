@@ -112,8 +112,8 @@ export default function SiteHeader() {
                 type="submit"
                 className="px-4 py-1.5 rounded-r-md text-sm font-medium flex items-center gap-1 hover:opacity-90 transition-opacity"
                 style={{
-                  backgroundColor: "var(--degase-gold)",
-                  color: "var(--degase-blue-dark)",
+                  backgroundColor: '#397ff0',
+                  color: '#f7f7f7',
                 }}
                 aria-label="Executar busca"
               >

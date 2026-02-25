@@ -17,7 +17,7 @@ function BannerSection() {
       <div className="w-full overflow-hidden" style={{ backgroundColor: "var(--degase-gold)" }}>
         <div className="container py-6 md:py-10 flex items-center">
           <div className="flex-1">
-            <h2 className="text-xl md:text-3xl font-bold text-black leading-tight">
+            <h2 className="text-xl md:text-3xl font-bold text-black leading-tight" style={{display: 'none'}}>
               {activeBanners[currentBanner]?.title}
             </h2>
             {activeBanners[currentBanner]?.subtitle && (

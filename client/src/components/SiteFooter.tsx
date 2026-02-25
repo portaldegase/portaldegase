@@ -9,7 +9,7 @@ export default function SiteFooter() {
           {/* Logo and Info */}
           <div>
             <div className="flex items-center gap-3 mb-4">
-              <img src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663378282282/eQqARgEIiuikpAao.png" alt="DEGASE" className="h-12 object-contain brightness-0 invert" />
+              <img src="https://www.rj.gov.br/degase/sites/default/files/brasao-degase-300.png" alt="DEGASE" className="h-12 object-contain brightness-0 invert" />
               <div>
                 <div className="text-xs uppercase tracking-wider opacity-70">Governo do Estado do Rio de Janeiro</div>
                 <div className="font-bold text-lg">DEGASE</div>
