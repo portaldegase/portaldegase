@@ -65,5 +65,31 @@ export const pageViews = mysqlTable("pageViews", {
   referrer: text("referrer"),
 });
 
-export type PageView = typeof pageViews.$inferSelect;
-export type InsertPageView = typeof pageViews.$inferInsert;
+
+// Social Media Sharing
+export const socialMediaShares = mysqlTable('social_media_shares', {
+  id: int('id').autoincrement().primaryKey(),
+  postId: int('postId').notNull(),
+  platform: text('platform').notNull(),
+  sharedUrl: text('sharedUrl'),
+  sharedAt: timestamp('sharedAt').defaultNow().notNull(),
+  status: text('status').notNull().default('pending'),
+  errorMessage: text('errorMessage'),
+  createdAt: timestamp('createdAt').defaultNow().notNull(),
+});
+export type SocialMediaShare = typeof socialMediaShares.$inferSelect;
+export type InsertSocialMediaShare = typeof socialMediaShares.$inferInsert;
+
+// Social Media Credentials
+export const socialMediaCredentials = mysqlTable('social_media_credentials', {
+  id: int('id').autoincrement().primaryKey(),
+  platform: varchar('platform', { length: 50 }).notNull().unique(),
+  accessToken: text('accessToken').notNull(),
+  refreshToken: text('refreshToken'),
+  expiresAt: int('expiresAt'),
+  pageId: varchar('pageId', { length: 255 }),
+  accountId: varchar('accountId', { length: 255 }),
+  updatedAt: timestamp('updatedAt').defaultNow().onUpdateNow().notNull(),
+});
+export type SocialMediaCredential = typeof socialMediaCredentials.$inferSelect;
+export type InsertSocialMediaCredential = typeof socialMediaCredentials.$inferInsert;

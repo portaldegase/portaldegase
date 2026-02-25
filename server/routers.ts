@@ -4,6 +4,8 @@ import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import * as db from "./db";
 import { z } from "zod";
+import { TRPCError } from "@trpc/server";
+import { getSocialMediaShares, updateSocialMediaShareStatus, saveSocialMediaCredential, getSocialMediaCredential, recordSocialMediaShare } from "./db";
 
 export const appRouter = router({
     // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
@@ -113,3 +115,78 @@ export const appRouter = router({
 });
 
 export type AppRouter = typeof appRouter;
+
+  social: router({
+    saveFacebookCredential: protectedProcedure
+      .input(z.object({
+        accessToken: z.string(),
+        pageId: z.string(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        if (ctx.user.role !== 'admin') throw new TRPCError({ code: 'FORBIDDEN' });
+        return saveSocialMediaCredential('facebook', input.accessToken, null, null, input.pageId);
+      }),
+
+    saveTwitterCredential: protectedProcedure
+      .input(z.object({
+        accessToken: z.string(),
+        accountId: z.string(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        if (ctx.user.role !== 'admin') throw new TRPCError({ code: 'FORBIDDEN' });
+        return saveSocialMediaCredential('twitter', input.accessToken, null, null, null, input.accountId);
+      }),
+
+    saveInstagramCredential: protectedProcedure
+      .input(z.object({
+        accessToken: z.string(),
+        accountId: z.string(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        if (ctx.user.role !== 'admin') throw new TRPCError({ code: 'FORBIDDEN' });
+        return saveSocialMediaCredential('instagram', input.accessToken, null, null, null, input.accountId);
+      }),
+
+    getCredentials: protectedProcedure
+      .input(z.object({
+        platform: z.enum(['facebook', 'twitter', 'instagram']),
+      }))
+      .query(async ({ input, ctx }) => {
+        if (ctx.user.role !== 'admin') throw new TRPCError({ code: 'FORBIDDEN' });
+        return getSocialMediaCredential(input.platform);
+      }),
+
+    recordShare: protectedProcedure
+      .input(z.object({
+        postId: z.number(),
+        platform: z.enum(['facebook', 'twitter', 'instagram']),
+        sharedUrl: z.string().optional(),
+        status: z.enum(['pending', 'success', 'failed']).default('pending'),
+        errorMessage: z.string().optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        if (ctx.user.role !== 'admin') throw new TRPCError({ code: 'FORBIDDEN' });
+        return recordSocialMediaShare(input.postId, input.platform, input.sharedUrl, input.status, input.errorMessage);
+      }),
+
+    getShares: protectedProcedure
+      .input(z.object({
+        postId: z.number(),
+      }))
+      .query(async ({ input, ctx }) => {
+        if (ctx.user.role !== 'admin') throw new TRPCError({ code: 'FORBIDDEN' });
+        return getSocialMediaShares(input.postId);
+      }),
+
+    updateShareStatus: protectedProcedure
+      .input(z.object({
+        shareId: z.number(),
+        status: z.enum(['pending', 'success', 'failed']),
+        sharedUrl: z.string().optional(),
+        errorMessage: z.string().optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        if (ctx.user.role !== 'admin') throw new TRPCError({ code: 'FORBIDDEN' });
+        return updateSocialMediaShareStatus(input.shareId, input.status, input.sharedUrl, input.errorMessage);
+      }),
+  })

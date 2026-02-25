@@ -1,5 +1,6 @@
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, InsertComment, comments, InsertAnalytics, analytics, InsertPageView, pageViews } from "../drizzle/schema";
+import { InsertUser, users, InsertComment, comments, InsertAnalytics, analytics, pageViews } from "../drizzle/schema";
+import { InsertSocialMediaShare, InsertSocialMediaCredential, socialMediaShares, socialMediaCredentials } from "../drizzle/schema";
 import { eq, gt, desc, sql } from "drizzle-orm";
 import { ENV } from './_core/env';
 
@@ -129,7 +130,7 @@ export async function getPendingComments() {
 }
 
 // ==================== ANALYTICS ====================
-export async function recordPageView(data: InsertPageView) {
+export async function recordPageView(data: any) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   await db.insert(pageViews).values(data);
@@ -189,4 +190,88 @@ export async function getPostViewsLastDays(days: number = 30) {
   .where(gt(pageViews.viewedAt, startDate))
   .groupBy(pageViews.postId, sql`DATE(${pageViews.viewedAt})`)
   .orderBy(desc(sql`DATE(${pageViews.viewedAt})`));
+}
+
+// Social Media Functions
+
+// Social Media Functions
+export async function saveSocialMediaCredential(
+  platform: string,
+  accessToken: string,
+  refreshToken?: string | null,
+  expiresAt?: number | null,
+  pageId?: string | null,
+  accountId?: string | null
+) {
+  const db = await getDb();
+  if (!db) throw new Error('Database not available');
+  
+  return db.insert(socialMediaCredentials)
+    .values({
+      platform,
+      accessToken,
+      refreshToken: refreshToken || null,
+      expiresAt: expiresAt || null,
+      pageId: pageId || null,
+      accountId: accountId || null,
+    });
+}
+
+export async function getSocialMediaCredential(platform: string) {
+  const db = await getDb();
+  if (!db) throw new Error('Database not available');
+  
+  return db.select()
+    .from(socialMediaCredentials)
+    .where(eq(socialMediaCredentials.platform, platform))
+    .limit(1)
+    .then(rows => rows[0] || null);
+}
+
+export async function recordSocialMediaShare(
+  postId: number,
+  platform: string,
+  sharedUrl?: string | null,
+  status: string = 'pending',
+  errorMessage?: string | null
+) {
+  const db = await getDb();
+  if (!db) throw new Error('Database not available');
+  
+  return db.insert(socialMediaShares)
+    .values({
+      postId,
+      platform,
+      sharedUrl: sharedUrl || null,
+      status,
+      errorMessage: errorMessage || null,
+    });
+}
+
+export async function getSocialMediaShares(postId: number) {
+  const db = await getDb();
+  if (!db) throw new Error('Database not available');
+  
+  return db.select()
+    .from(socialMediaShares)
+    .where(eq(socialMediaShares.postId, postId))
+    .orderBy(desc(socialMediaShares.createdAt));
+}
+
+export async function updateSocialMediaShareStatus(
+  shareId: number,
+  status: string,
+  sharedUrl?: string | null,
+  errorMessage?: string | null
+) {
+  const db = await getDb();
+  if (!db) throw new Error('Database not available');
+  
+  return db.update(socialMediaShares)
+    .set({
+      status,
+      sharedUrl: sharedUrl || null,
+      errorMessage: errorMessage || null,
+    })
+    .where(eq(socialMediaShares.id, shareId));
 }
