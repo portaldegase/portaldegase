@@ -1,4 +1,5 @@
-import { eq, like, or, desc, asc, and, sql, inArray } from "drizzle-orm";
+import { eq, like, or, desc, asc, and, sql, inArray, ilike } from "drizzle-orm";
+import { lower } from "drizzle-orm/sql/expressions/functions";
 import { drizzle } from "drizzle-orm/mysql2";
 import {
   InsertUser, users,
@@ -130,7 +131,13 @@ export async function listPosts(opts: { status?: string; categoryId?: number; li
   if (opts.status) conditions.push(eq(posts.status, opts.status as any));
   if (opts.categoryId) conditions.push(eq(posts.categoryId, opts.categoryId));
   if (opts.featured) conditions.push(eq(posts.isFeatured, true));
-  if (opts.search) conditions.push(or(like(posts.title, `%${opts.search}%`), like(posts.content, `%${opts.search}%`)));
+  if (opts.search) {
+    const searchLower = opts.search.toLowerCase();
+    conditions.push(or(
+      ilike(posts.title, `%${searchLower}%`),
+      ilike(posts.content, `%${searchLower}%`)
+    ));
+  }
   const where = conditions.length > 0 ? and(...conditions) : undefined;
   const [items, countResult] = await Promise.all([
     db.select().from(posts).where(where).orderBy(desc(posts.publishedAt), desc(posts.createdAt)).limit(opts.limit ?? 20).offset(opts.offset ?? 0),
@@ -381,10 +388,11 @@ export async function getAllSiteConfig() {
 export async function searchContent(query: string, limit = 20) {
   const db = await getDb();
   if (!db) return { posts: [], pages: [] };
-  const searchTerm = `%${query}%`;
+  const searchLower = query.toLowerCase();
+  const searchTerm = `%${searchLower}%`;
   const [postResults, pageResults] = await Promise.all([
-    db.select().from(posts).where(and(eq(posts.status, "published"), or(like(posts.title, searchTerm), like(posts.content, searchTerm)))).orderBy(desc(posts.publishedAt)).limit(limit),
-    db.select().from(pages).where(and(eq(pages.status, "published"), or(like(pages.title, searchTerm), like(pages.content, searchTerm)))).orderBy(asc(pages.sortOrder)).limit(limit),
+    db.select().from(posts).where(and(eq(posts.status, "published"), or(ilike(posts.title, searchTerm), ilike(posts.content, searchTerm)))).orderBy(desc(posts.publishedAt)).limit(limit),
+    db.select().from(pages).where(and(eq(pages.status, "published"), or(ilike(pages.title, searchTerm), ilike(pages.content, searchTerm)))).orderBy(asc(pages.sortOrder)).limit(limit),
   ]);
   return { posts: postResults, pages: pageResults };
 }
@@ -788,13 +796,14 @@ export async function searchPosts(query: string, limit = 10) {
   const db = await getDb();
   if (!db) return [];
   
-  const searchTerm = `%${query}%`;
+  const searchLower = query.toLowerCase();
+  const searchTerm = `%${searchLower}%`;
   return db.select().from(posts)
     .where(
       or(
-        like(posts.title, searchTerm),
-        like(posts.content, searchTerm),
-        like(posts.excerpt, searchTerm)
+        ilike(posts.title, searchTerm),
+        ilike(posts.content, searchTerm),
+        ilike(posts.excerpt, searchTerm)
       )
     )
     .where(eq(posts.status, 'published'))

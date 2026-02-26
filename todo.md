@@ -226,3 +226,9 @@
 - [ ] Compartilhamento automático ao publicar
 - [ ] Fila de compartilhamento
 - [ ] Log de compartilhamentos
+
+## Melhoria de Sistema de Busca
+- [x] Implementar busca case-insensitive
+- [x] Permitir busca por palavras parciais
+- [x] Atualizar query de busca no banco de dados
+- [x] Testar busca com diferentes termos
