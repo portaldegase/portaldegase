@@ -66,7 +66,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       >
         <div className="flex items-center justify-between p-4 border-b border-white/10">
           <Link href="/" className="flex items-center gap-2">
-            <img src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663378282282/eQqARgEIiuikpAao.png" alt="DEGASE" className="h-8 brightness-0 invert" />
+            <img src="https://www.rj.gov.br/degase/sites/default/files/brasao-degase-300.png" alt="DEGASE" className="h-8 brightness-0 invert" />
             <div>
               <div className="font-bold text-sm">DEGASE</div>
               <div className="text-[10px] opacity-70">Painel Administrativo</div>
