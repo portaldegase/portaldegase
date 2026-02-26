@@ -8,12 +8,8 @@ export default function SiteFooter() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Logo and Info */}
           <div>
-            <div className="flex items-center gap-3 mb-4">
-              <img src="https://www.rj.gov.br/degase/sites/default/files/brasao-degase-300.png" alt="DEGASE" className="h-12 object-contain brightness-0 invert" />
-              <div>
-                <div className="text-xs uppercase tracking-wider opacity-70">Governo do Estado do Rio de Janeiro</div>
-                <div className="font-bold text-lg">DEGASE</div>
-              </div>
+            <div className="mb-4">
+              <img src="https://www.rj.gov.br/degase/sites/default/themes/rjgov/imagens/logo-gov-footer.png" alt="Governo do Estado do Rio de Janeiro" className="h-16 object-contain" />
             </div>
             <p className="text-sm opacity-80 mb-4">
               Departamento Geral de Ações Socioeducativas - Responsável pela execução das medidas socioeducativas no Estado do Rio de Janeiro.

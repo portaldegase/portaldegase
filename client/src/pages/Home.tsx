@@ -219,6 +219,38 @@ function VideosSection() {
           </div>
         </div>
 
+        {/* Miniaturas dos próximos vídeos */}
+        {videos && videos.length > 1 && (
+          <div className="mt-8 grid grid-cols-2 gap-4 max-w-2xl mx-auto">
+            {videos.slice(1, 3).map((video: any) => {
+              const videoId = video.youtubeUrl?.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]+)/)?.[1];
+              const youtubeUrl = `https://www.youtube.com/watch?v=${videoId}`;
+              
+              return (
+                <a
+                  key={video.id}
+                  href={youtubeUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group relative rounded-lg overflow-hidden shadow hover:shadow-lg transition-shadow"
+                >
+                  <img
+                    src={video.thumbnailUrl || `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`}
+                    alt={video.title}
+                    className="w-full aspect-video object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                  <div className="absolute inset-0 bg-black/40 group-hover:bg-black/50 transition-colors flex items-center justify-center">
+                    <Play size={32} className="text-white" />
+                  </div>
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-2">
+                    <p className="text-white text-xs font-semibold line-clamp-2">{video.title}</p>
+                  </div>
+                </a>
+              );
+            })}
+          </div>
+        )}
+
         <div className="text-center mt-6">
           <a href="https://www.youtube.com/@tvdegase" target="_blank" rel="noopener noreferrer">
             <Button variant="outline" className="border-2 font-semibold text-xs uppercase tracking-wider" style={{ borderColor: "var(--degase-blue-dark)", color: "var(--degase-blue-dark)" }}>
