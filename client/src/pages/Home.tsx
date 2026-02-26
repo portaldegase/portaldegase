@@ -37,7 +37,7 @@ function BannerSection() {
   return (
     <section aria-label="Banners em destaque" className="relative w-full">
       <div className="w-full overflow-hidden bg-white">
-        <div className="relative w-full h-64 md:h-96 lg:h-[500px] flex items-center justify-center">
+        <div className="relative w-full h-48 md:h-64 lg:h-80 flex items-center justify-center">
           {/* Imagem do banner com transição suave */}
           {activeBanners[currentBanner]?.imageUrl && (
             <img
