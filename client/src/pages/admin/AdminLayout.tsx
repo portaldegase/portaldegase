@@ -16,6 +16,7 @@ const navItems = [
   { href: "/admin/paginas", label: "Páginas", icon: BookOpen },
   { href: "/admin/banners", label: "Banners", icon: Image },
   { href: "/admin/videos", label: "Vídeos", icon: Video },
+  { href: "/admin/servicos", label: "Serviços", icon: Building2 },
   { href: "/admin/unidades", label: "Unidades", icon: Building2 },
   { href: "/admin/transparencia", label: "Transparência", icon: Shield },
   { href: "/admin/usuarios", label: "Usuários", icon: Shield },

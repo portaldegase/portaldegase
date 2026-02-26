@@ -17,6 +17,7 @@ import {
   comments, InsertComment,
   mediaLibrary, InsertMediaLibrary,
   colorThemes, InsertColorTheme,
+  services, InsertService,
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -847,4 +848,50 @@ export async function getPostsByTag(tagId: number, limit = 10) {
     .orderBy(desc(posts.createdAt));
   
   return result.map(r => r.post);
+}
+
+
+// ==================== SERVIÇOS ====================
+export async function createService(service: InsertService) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  
+  const result = await db.insert(services).values(service);
+  return result;
+}
+
+export async function listServices(activeOnly = true) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const query = db.select().from(services).orderBy(asc(services.sortOrder));
+  if (activeOnly) {
+    return query.where(eq(services.isActive, true));
+  }
+  return query;
+}
+
+export async function getServiceById(id: number) {
+  const db = await getDb();
+  if (!db) return null;
+  
+  const result = await db.select().from(services).where(eq(services.id, id)).limit(1);
+  return result.length > 0 ? result[0] : null;
+}
+
+export async function updateService(id: number, service: Partial<InsertService>) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  
+  await db.update(services).set({
+    ...service,
+    updatedAt: new Date(),
+  }).where(eq(services.id, id));
+}
+
+export async function deleteService(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  
+  await db.delete(services).where(eq(services.id, id));
 }

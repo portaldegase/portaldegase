@@ -610,6 +610,40 @@ export const appRouter = router({
       return { success: true };
     }),
   }),
+
+  services: router({
+    list: publicProcedure.query(async () => db.listServices(true)),
+    listAll: adminProcedure.query(async () => db.listServices(false)),
+    getById: publicProcedure.input(z.object({ id: z.number() })).query(async ({ input }) => db.getServiceById(input.id)),
+    create: adminProcedure.input(z.object({
+      name: z.string().min(1),
+      icon: z.string().min(1),
+      link: z.string().url(),
+      color: z.string().default("#0066CC"),
+      sortOrder: z.number().default(0),
+      isActive: z.boolean().default(true),
+    })).mutation(async ({ input }) => {
+      await db.createService(input);
+      return { success: true };
+    }),
+    update: adminProcedure.input(z.object({
+      id: z.number(),
+      name: z.string().optional(),
+      icon: z.string().optional(),
+      link: z.string().url().optional(),
+      color: z.string().optional(),
+      sortOrder: z.number().optional(),
+      isActive: z.boolean().optional(),
+    })).mutation(async ({ input }) => {
+      const { id, ...data } = input;
+      await db.updateService(id, data);
+      return { success: true };
+    }),
+    delete: adminProcedure.input(z.object({ id: z.number() })).mutation(async ({ input }) => {
+      await db.deleteService(input.id);
+      return { success: true };
+    }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;

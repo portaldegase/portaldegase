@@ -29,6 +29,7 @@ import AdminCategories from "./pages/admin/AdminCategories";
 import AdminPages from "./pages/admin/AdminPages";
 import AdminBanners from "./pages/admin/AdminBanners";
 import AdminVideos from "./pages/admin/AdminVideos";
+import AdminServices from "./pages/admin/AdminServices";
 import AdminUnits from "./pages/admin/AdminUnits";
 import AdminTransparency from "./pages/admin/AdminTransparency";
 import AdminSettings from "./pages/admin/AdminSettings";
@@ -91,6 +92,7 @@ function Router() {
       <Route path="/admin/paginas">{() => <AdminPage component={AdminPages} />}</Route>
       <Route path="/admin/banners">{() => <AdminPage component={AdminBanners} />}</Route>
       <Route path="/admin/videos">{() => <AdminPage component={AdminVideos} />}</Route>
+      <Route path="/admin/servicos">{() => <AdminPage component={AdminServices} />}</Route>
       <Route path="/admin/unidades">{() => <AdminPage component={AdminUnits} />}</Route>
       <Route path="/admin/transparencia">{() => <AdminPage component={AdminTransparency} />}</Route>
       <Route path="/admin/usuarios">{() => <AdminPage component={AdminUsers} />}</Route>

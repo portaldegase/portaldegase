@@ -3,6 +3,7 @@ import { Link } from "wouter";
 import { ArrowRight, Play, Building2, FileText, Users, Scale, DollarSign, HelpCircle, Database, Shield, Handshake, ClipboardList, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useMemo, useState, useEffect } from "react";
+import ServicesSection from "@/components/ServicesSection";
 
 function BannerSection() {
   const { data: banners } = trpc.banners.list.useQuery({ activeOnly: true });
@@ -391,6 +392,7 @@ export default function Home() {
     <main id="main-content" role="main">
       <BannerSection />
       <NewsSection />
+      <ServicesSection />
       <VideosSection />
       <TransparencySection />
       <UnitsSection />

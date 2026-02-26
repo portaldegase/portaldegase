@@ -354,3 +354,22 @@ export const socialMediaShares = mysqlTable("social_media_shares", {
 
 export type SocialMediaShare = typeof socialMediaShares.$inferSelect;
 export type InsertSocialMediaShare = typeof socialMediaShares.$inferInsert;
+
+
+/**
+ * Services - cadastro de serviços exibidos na página inicial
+ */
+export const services = mysqlTable("services", {
+  id: int("id").autoincrement().primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  icon: varchar("icon", { length: 500 }).notNull(), // URL da imagem do ícone
+  link: varchar("link", { length: 1024 }).notNull(),
+  color: varchar("color", { length: 7 }).default("#0066CC").notNull(), // Cor do card em hex
+  sortOrder: int("sortOrder").default(0).notNull(),
+  isActive: boolean("isActive").default(true).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Service = typeof services.$inferSelect;
+export type InsertService = typeof services.$inferInsert;
