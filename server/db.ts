@@ -1,5 +1,4 @@
 import { eq, like, or, desc, asc, and, sql, inArray, ilike } from "drizzle-orm";
-import { lower } from "drizzle-orm/sql/expressions/functions";
 import { drizzle } from "drizzle-orm/mysql2";
 import {
   InsertUser, users,
@@ -240,7 +239,9 @@ export async function createPage(data: InsertPage) {
   const db = await getDb();
   if (!db) throw new Error("DB not available");
   const result = await db.insert(pages).values(data);
-  return result[0].insertId;
+  const pageId = result[0].insertId as number;
+  const page = await db.select().from(pages).where(eq(pages.id, pageId)).limit(1);
+  return page[0];
 }
 
 export async function updatePage(id: number, data: Partial<InsertPage>) {
@@ -715,11 +716,11 @@ export async function getPostComments(postId: number, onlyApproved = true) {
   const db = await getDb();
   if (!db) return [];
   
-  const query = db.select().from(comments).where(eq(comments.postId, postId));
+  const conditions = [eq(comments.postId, postId)];
   if (onlyApproved) {
-    return query.where(eq(comments.status, 'approved')).orderBy(desc(comments.createdAt));
+    conditions.push(eq(comments.status, 'approved'));
   }
-  return query.orderBy(desc(comments.createdAt));
+  return db.select().from(comments).where(and(...conditions)).orderBy(desc(comments.createdAt));
 }
 
 export async function getPendingComments() {
@@ -806,13 +807,15 @@ export async function searchPosts(query: string, limit = 10) {
   const searchTerm = `%${searchLower}%`;
   return db.select().from(posts)
     .where(
-      or(
-        ilike(posts.title, searchTerm),
-        ilike(posts.content, searchTerm),
-        ilike(posts.excerpt, searchTerm)
+      and(
+        or(
+          ilike(posts.title, searchTerm),
+          ilike(posts.content, searchTerm),
+          ilike(posts.excerpt, searchTerm)
+        ),
+        eq(posts.status, 'published')
       )
     )
-    .where(eq(posts.status, 'published'))
     .limit(limit)
     .orderBy(desc(posts.createdAt));
 }

@@ -27,7 +27,7 @@ export default function AdminUsers() {
       resetForm();
       setIsCreating(false);
     },
-    onError: (error) => {
+    onError: (error: any) => {
       toast.error(`Erro: ${error.message}`);
     },
   });
@@ -38,7 +38,7 @@ export default function AdminUsers() {
       listUsers.refetch();
       resetForm();
     },
-    onError: (error) => {
+    onError: (error: any) => {
       toast.error(`Erro: ${error.message}`);
     },
   });
@@ -48,7 +48,7 @@ export default function AdminUsers() {
       toast.success("Usuário deletado com sucesso!");
       listUsers.refetch();
     },
-    onError: (error) => {
+    onError: (error: any) => {
       toast.error(`Erro: ${error.message}`);
     },
   });

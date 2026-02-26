@@ -68,6 +68,14 @@ export const appRouter = router({
       await db.updateUser(id, data);
       return { success: true };
     }),
+    delete: adminProcedure.input(z.object({ id: z.number() })).mutation(async ({ input }) => {
+      const user = await db.getUserById(input.id);
+      if (!user) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Usuario nao encontrado' });
+      }
+      await db.updateUser(input.id, { role: 'user' });
+      return { success: true };
+    }),
   }),
 
   categories: router({
