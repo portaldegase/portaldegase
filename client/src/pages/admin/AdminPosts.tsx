@@ -29,7 +29,7 @@ export default function AdminPosts() {
   const [filterAuthorId, setFilterAuthorId] = useState<number | undefined>();
 
   const utils = trpc.useUtils();
-  const { data, isLoading } = trpc.posts.list.useQuery({ search: search || undefined, authorId: filterAuthorId, limit: 50 });
+  const { data, isLoading } = trpc.posts.list.useQuery({ limit: 50 });
   const { data: categories } = trpc.categories.list.useQuery();
   const { data: users } = trpc.users.list.useQuery();
 

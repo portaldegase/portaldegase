@@ -261,3 +261,20 @@
 - [x] Adicionar informações sobre tamanho ideal do banner (1920x600px)
 - [x] Remover campo de URL de imagem
 - [x] Integrar upload para S3
+
+
+## Correção de Erros TypeScript
+- [ ] Corrigir campo isFeatured em AdminVideos.tsx
+- [ ] Corrigir enum de status em AdminVideos.tsx
+- [ ] Validar compilação sem erros
+
+## Preview de Imagem
+- [ ] Implementar preview de imagem antes de upload em AdminBanners
+- [ ] Implementar preview em AdminServices
+- [ ] Implementar preview em AdminPosts
+
+## Compressão de Imagens
+- [ ] Adicionar biblioteca de compressão
+- [ ] Implementar compressão antes de upload em AdminBanners
+- [ ] Implementar compressão em AdminServices
+- [ ] Implementar compressão em AdminPosts

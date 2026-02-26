@@ -58,7 +58,7 @@ export default function AdminBanners() {
       const result = await uploadMutation.mutateAsync({
         file: new Uint8Array(buffer),
         filename: file.name,
-        contentType: file.type,
+        mimetype: file.type,
       });
       setImageUrl(result.url);
       toast.success("Imagem enviada com sucesso!");
@@ -72,8 +72,8 @@ export default function AdminBanners() {
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!title.trim() || !imageUrl.trim()) { toast.error("Título e imagem são obrigatórios."); return; }
-    if (editingId) { updateMutation.mutate({ id: editingId, title, subtitle: subtitle || undefined, imageUrl, linkUrl: linkUrl || undefined, isActive }); }
-    else { createMutation.mutate({ title, subtitle: subtitle || undefined, imageUrl, linkUrl: linkUrl || undefined, isActive }); }
+    if (editingId) { updateMutation.mutate({ id: editingId, title, imageUrl, linkUrl: linkUrl || undefined, isActive }); }
+    else { createMutation.mutate({ title, imageUrl, linkUrl: linkUrl || undefined, isActive }); }
   }
 
   return (

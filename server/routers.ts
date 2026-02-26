@@ -151,7 +151,7 @@ export const appRouter = router({
       content: z.string().min(1),
       featuredImage: z.string().optional(),
       categoryId: z.number().optional(),
-      status: z.enum(['draft', 'published']).default('draft'),
+      status: z.enum(['draft', 'published', 'archived']).default('draft'),
       isFeatured: z.boolean().optional(),
       tags: z.array(z.number()).optional(),
     })).mutation(async ({ input, ctx }) => {
@@ -353,6 +353,7 @@ export const appRouter = router({
       categoryId: z.number().optional(),
       sortOrder: z.number().optional(),
       isActive: z.boolean().optional(),
+      isFeatured: z.boolean().optional(),
     })).mutation(async ({ input }) => db.createVideo(input)),
     update: editorProcedure.input(z.object({
       id: z.number(),
@@ -363,6 +364,7 @@ export const appRouter = router({
       categoryId: z.number().optional(),
       sortOrder: z.number().optional(),
       isActive: z.boolean().optional(),
+      isFeatured: z.boolean().optional(),
     })).mutation(async ({ input }) => {
       const { id, ...data } = input;
       return db.updateVideo(id, data);
