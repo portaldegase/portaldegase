@@ -212,7 +212,7 @@ export const postHistory = mysqlTable("post_history", {
   excerpt: text("excerpt"),
   content: text("content").notNull(),
   featuredImage: text("featuredImage"),
-  status: mysqlEnum("status", ["draft", "published", "archived"]).default("draft").notNull(),
+  status: mysqlEnum("status", ["draft", "published", "archived", "scheduled"]).default("draft").notNull(),
   isFeatured: boolean("isFeatured").default(false).notNull(),
   editorId: int("editorId"),
   changeDescription: varchar("changeDescription", { length: 500 }),

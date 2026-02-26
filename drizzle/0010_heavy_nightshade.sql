@@ -1,0 +1,1 @@
+ALTER TABLE `post_history` MODIFY COLUMN `status` enum('draft','published','archived','scheduled') NOT NULL DEFAULT 'draft';

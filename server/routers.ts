@@ -519,6 +519,15 @@ export const appRouter = router({
     }),
   }),
 
+  search: router({
+    query: publicProcedure.input(z.object({ q: z.string() })).query(async ({ input }) => {
+      if (!input.q || input.q.trim().length === 0) {
+        return { posts: [], pages: [] };
+      }
+      return db.searchContent(input.q);
+    }),
+  }),
+
   media: router({
     getLibrary: publicProcedure.input(z.object({ limit: z.number().default(50), offset: z.number().default(0) })).query(async ({ input }) => db.getMediaLibrary(input.limit, input.offset)),
     getByType: publicProcedure.input(z.object({ fileType: z.enum(['image', 'video']), limit: z.number().default(50), offset: z.number().default(0) })).query(async ({ input }) => db.getMediaByType(input.fileType, input.limit, input.offset)),

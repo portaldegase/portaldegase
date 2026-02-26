@@ -420,7 +420,7 @@ export async function deleteUser(id: number) {
 
 export async function createPostHistory(
   postId: number,
-  post: InsertPostHistory & { postId?: never }
+  post: Omit<InsertPostHistory, 'postId'>
 ): Promise<void> {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
@@ -428,7 +428,7 @@ export async function createPostHistory(
   await db.insert(postHistory).values({
     ...post,
     postId,
-  });
+  } as InsertPostHistory);
 }
 
 export async function getPostHistory(postId: number) {
@@ -496,7 +496,7 @@ export async function revertPostToVersion(postId: number, historyId: number, edi
 
 export async function createPageHistory(
   pageId: number,
-  page: InsertPageHistory & { pageId?: never }
+  page: Omit<InsertPageHistory, 'pageId'>
 ): Promise<void> {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
@@ -504,7 +504,7 @@ export async function createPageHistory(
   await db.insert(pageHistory).values({
     ...page,
     pageId,
-  });
+  } as InsertPageHistory);
 }
 
 export async function getPageHistory(pageId: number) {
