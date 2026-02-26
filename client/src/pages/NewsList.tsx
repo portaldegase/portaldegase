@@ -1,7 +1,7 @@
 import { trpc } from "@/lib/trpc";
 import { Link, useSearch } from "wouter";
 import { useState, useMemo } from "react";
-import { FileText, ChevronLeft, ChevronRight } from "lucide-react";
+import { FileText, ChevronLeft, ChevronRight, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function NewsList() {
@@ -55,11 +55,21 @@ export default function NewsList() {
                       {post.title}
                     </h2>
                     <p className="text-xs text-gray-600 mt-1 line-clamp-2">{post.excerpt}</p>
-                    {post.publishedAt && (
-                      <time className="text-xs text-gray-400 mt-1 block">
-                        {new Date(post.publishedAt).toLocaleDateString("pt-BR")}
-                      </time>
-                    )}
+                    <div className="flex items-center justify-between mt-2">
+                      <div>
+                        {post.publishedAt && (
+                          <time className="text-xs text-gray-400 block">
+                            {new Date(post.publishedAt).toLocaleDateString("pt-BR")}
+                          </time>
+                        )}
+                      </div>
+                      {post.authorId && (
+                        <span className="text-xs text-gray-500 flex items-center gap-1">
+                          <User size={12} />
+                          <AuthorNameBadge authorId={post.authorId} />
+                        </span>
+                      )}
+                    </div>
                   </Link>
                 </article>
               ))}
@@ -90,4 +100,9 @@ export default function NewsList() {
       </div>
     </main>
   );
+}
+
+function AuthorNameBadge({ authorId }: { authorId: number }) {
+  const { data: user } = trpc.users.getById.useQuery({ id: authorId });
+  return <span>{user?.name?.split(' ')[0] || user?.email?.split('@')[0] || 'Autor'}</span>;
 }

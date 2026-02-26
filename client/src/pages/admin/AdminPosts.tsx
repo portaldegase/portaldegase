@@ -1,8 +1,8 @@
-import { trpc } from "@/lib/trpc";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Plus, Edit, Trash2, Eye, Search } from "lucide-react";
 import { toast } from "sonner";
+import { trpc } from "@/lib/trpc";
 import RichTextEditor from "@/components/RichTextEditor";
 
 function slugify(text: string): string {
@@ -20,12 +20,14 @@ export default function AdminPosts() {
   const [excerpt, setExcerpt] = useState("");
   const [featuredImage, setFeaturedImage] = useState("");
   const [categoryId, setCategoryId] = useState<number | undefined>();
+  const [authorId, setAuthorId] = useState<number | undefined>();
   const [status, setStatus] = useState<"draft" | "published" | "archived">("draft");
   const [isFeatured, setIsFeatured] = useState(false);
 
   const utils = trpc.useUtils();
   const { data, isLoading } = trpc.posts.list.useQuery({ search: search || undefined, limit: 50 });
   const { data: categories } = trpc.categories.list.useQuery();
+  const { data: users } = trpc.users.list.useQuery();
 
   const createMutation = trpc.posts.create.useMutation({
     onSuccess: () => { utils.posts.list.invalidate(); toast.success("Notícia criada com sucesso!"); resetForm(); },
@@ -50,6 +52,7 @@ export default function AdminPosts() {
     setExcerpt("");
     setFeaturedImage("");
     setCategoryId(undefined);
+    setAuthorId(undefined);
     setStatus("draft");
     setIsFeatured(false);
   }
@@ -61,6 +64,7 @@ export default function AdminPosts() {
     setExcerpt(post.excerpt || "");
     setFeaturedImage(post.featuredImage || "");
     setCategoryId(post.categoryId || undefined);
+    setAuthorId(post.authorId || undefined);
     setStatus(post.status);
     setIsFeatured(post.isFeatured);
     setShowEditor(true);
@@ -72,7 +76,7 @@ export default function AdminPosts() {
       toast.error("Título e conteúdo são obrigatórios.");
       return;
     }
-    const data = { title, content, excerpt: excerpt || undefined, featuredImage: featuredImage || undefined, categoryId, status, isFeatured };
+    const data = { title, content, excerpt: excerpt || undefined, featuredImage: featuredImage || undefined, categoryId, authorId, status, isFeatured };
     if (editingId) {
       updateMutation.mutate({ id: editingId, ...data });
     } else {
@@ -113,7 +117,7 @@ export default function AdminPosts() {
             />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium mb-1">Categoria</label>
               <select
@@ -127,6 +131,22 @@ export default function AdminPosts() {
                 ))}
               </select>
             </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Responsável</label>
+              <select
+                value={authorId ?? ""}
+                onChange={(e) => setAuthorId(e.target.value ? Number(e.target.value) : undefined)}
+                className="w-full px-3 py-2 border rounded-md"
+              >
+                <option value="">Selecionar responsável</option>
+                {users?.map((user: any) => (
+                  <option key={user.id} value={user.id}>{user.name || user.email}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium mb-1">Status</label>
               <select

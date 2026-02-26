@@ -200,6 +200,13 @@
 - [ ] Mostrar tags mais usadas
 - [ ] Filtro por data
 
+## Responsável por Postagem
+- [x] Adicionar campo de responsável no formulário de criação/edição de notícias
+- [x] Exibir responsável na página de detalhes da notícia
+- [ ] Exibir responsável na listagem de notícias do admin
+- [x] Permitir seleção de responsável (usuário logado ou outro usuário)
+- [x] Exibir responsável na página de listagem pública de notícias
+
 ## Compartilhamento em Redes Sociais
 - [ ] Configuração de credenciais de redes sociais no AdminSettings
 - [ ] Endpoints para compartilhar em Facebook

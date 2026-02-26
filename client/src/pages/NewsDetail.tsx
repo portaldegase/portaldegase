@@ -1,6 +1,6 @@
 import { trpc } from "@/lib/trpc";
 import { useParams, Link } from "wouter";
-import { ArrowLeft, Calendar, Eye, Tag } from "lucide-react";
+import { ArrowLeft, Calendar, Eye, Tag, User } from "lucide-react";
 
 export default function NewsDetail() {
   const params = useParams<{ slug: string }>();
@@ -66,6 +66,12 @@ export default function NewsDetail() {
               <Eye size={14} />
               {post.viewCount} visualizações
             </span>
+            {post.authorId && (
+              <span className="flex items-center gap-1">
+                <User size={14} />
+                Responsável: <AuthorName authorId={post.authorId} />
+              </span>
+            )}
           </div>
 
           {tags && tags.length > 0 && (
@@ -83,4 +89,9 @@ export default function NewsDetail() {
       </div>
     </main>
   );
+}
+
+function AuthorName({ authorId }: { authorId: number }) {
+  const { data: user } = trpc.users.getById.useQuery({ id: authorId });
+  return <span>{user?.name || user?.email || "Desconhecido"}</span>;
 }

@@ -28,6 +28,11 @@ export const appRouter = router({
     }),
   }),
 
+  users: router({
+    list: adminProcedure.query(async () => db.listUsers()),
+    getById: adminProcedure.input(z.object({ id: z.number() })).query(async ({ input }) => db.getUserById(input.id)),
+  }),
+
   categories: router({
     // Tags
     listTags: publicProcedure.query(async () => db.listTags()),
