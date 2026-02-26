@@ -234,9 +234,14 @@
 - [x] Testar busca com diferentes termos
 
 ## Upload de Ícones e Analytics de Serviços
-- [ ] Criar tabela de analytics para rastreamento de cliques em serviços
-- [ ] Implementar função para registrar cliques em serviços
-- [ ] Adicionar campo de upload de ícones no formulário AdminServices
-- [ ] Integrar upload de ícones para S3
-- [ ] Criar dashboard de estatísticas de cliques em serviços
-- [ ] Exibir gráficos de engajamento por serviço
+- [x] Criar tabela de analytics para rastreamento de cliques em serviços
+- [x] Implementar função para registrar cliques em serviços
+- [x] Adicionar campo de upload de ícones no formulário AdminServices
+- [x] Integrar upload de ícones para S3
+- [x] Criar dashboard de estatísticas de cliques em serviços
+- [x] Exibir gráficos de engajamento por serviço
+
+## Ajuste Visual de Ícones nos Cards
+- [x] Exibir ícones com cores nos cards de serviços
+- [x] Exibir ícones com cores nos cards de transparência
+- [x] Validar visual em diferentes resoluções

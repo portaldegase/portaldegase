@@ -43,7 +43,7 @@ export default function ServicesSection() {
                 <img
                   src={service.icon}
                   alt={service.name}
-                  className="h-12 w-12 object-contain filter brightness-0 invert"
+                  className="h-12 w-12 object-contain"
                 />
                 <div className="text-center">
                   <h3 className="text-white font-semibold text-sm group-hover:font-bold transition-all">
