@@ -643,6 +643,20 @@ export const appRouter = router({
       await db.deleteService(input.id);
       return { success: true };
     }),
+    getAnalytics: adminProcedure.query(async () => db.getAllServicesAnalytics()),
+    recordClick: publicProcedure.input(z.object({ serviceId: z.number() })).mutation(async ({ input, ctx }) => {
+      const userAgent = ctx.req.headers["user-agent"];
+      const referer = ctx.req.headers["referer"];
+      const ipAddress = ctx.req.ip || ctx.req.socket.remoteAddress;
+      
+      await db.recordServiceClick(
+        input.serviceId,
+        userAgent as string | undefined,
+        referer as string | undefined,
+        ipAddress as string | undefined
+      );
+      return { success: true };
+    })
   }),
 });
 

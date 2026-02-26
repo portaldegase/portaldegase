@@ -1,4 +1,4 @@
-import { eq, like, or, desc, asc, and, sql, inArray, ilike } from "drizzle-orm";
+import { eq, like, or, desc, asc, and, sql, inArray, ilike, gte } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import {
   InsertUser, users,
@@ -18,6 +18,8 @@ import {
   mediaLibrary, InsertMediaLibrary,
   colorThemes, InsertColorTheme,
   services, InsertService,
+  serviceAnalytics, InsertServiceAnalytics,
+  serviceClickLog, InsertServiceClickLog,
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -894,4 +896,82 @@ export async function deleteService(id: number) {
   if (!db) throw new Error("DB not available");
   
   await db.delete(services).where(eq(services.id, id));
+}
+
+
+// ==================== SERVICE ANALYTICS ====================
+export async function recordServiceClick(serviceId: number, userAgent?: string, referer?: string, ipAddress?: string) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  
+  // Registrar click no log detalhado
+  await db.insert(serviceClickLog).values({
+    serviceId,
+    userAgent,
+    referer,
+    ipAddress,
+  });
+  
+  // Atualizar ou criar registro de analytics
+  const existing = await db.select().from(serviceAnalytics).where(eq(serviceAnalytics.serviceId, serviceId)).limit(1);
+  
+  if (existing.length > 0) {
+    await db.update(serviceAnalytics)
+      .set({
+        clickCount: (existing[0].clickCount || 0) + 1,
+        lastClickedAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .where(eq(serviceAnalytics.serviceId, serviceId));
+  } else {
+    await db.insert(serviceAnalytics).values({
+      serviceId,
+      clickCount: 1,
+      lastClickedAt: new Date(),
+    });
+  }
+}
+
+export async function getServiceAnalytics(serviceId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  
+  const result = await db.select().from(serviceAnalytics).where(eq(serviceAnalytics.serviceId, serviceId)).limit(1);
+  return result.length > 0 ? result[0] : null;
+}
+
+export async function getAllServicesAnalytics() {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return db.select({
+    service: services,
+    analytics: serviceAnalytics,
+  })
+  .from(services)
+  .leftJoin(serviceAnalytics, eq(services.id, serviceAnalytics.serviceId))
+  .orderBy(desc(serviceAnalytics.clickCount));
+}
+
+export async function getServiceClickStats(serviceId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  
+  const analytics = await getServiceAnalytics(serviceId);
+  if (!analytics) return null;
+  
+  // Contar clicks nos últimos 7 dias
+  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+  const recentClicks = await db.select({ count: sql`COUNT(*)` })
+    .from(serviceClickLog)
+    .where(and(
+      eq(serviceClickLog.serviceId, serviceId),
+      gte(serviceClickLog.clickedAt, sevenDaysAgo)
+    ));
+  
+  return {
+    totalClicks: analytics.clickCount,
+    recentClicks: recentClicks[0]?.count || 0,
+    lastClickedAt: analytics.lastClickedAt,
+  };
 }

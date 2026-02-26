@@ -232,3 +232,11 @@
 - [x] Permitir busca por palavras parciais
 - [x] Atualizar query de busca no banco de dados
 - [x] Testar busca com diferentes termos
+
+## Upload de Ícones e Analytics de Serviços
+- [ ] Criar tabela de analytics para rastreamento de cliques em serviços
+- [ ] Implementar função para registrar cliques em serviços
+- [ ] Adicionar campo de upload de ícones no formulário AdminServices
+- [ ] Integrar upload de ícones para S3
+- [ ] Criar dashboard de estatísticas de cliques em serviços
+- [ ] Exibir gráficos de engajamento por serviço

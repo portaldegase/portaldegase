@@ -373,3 +373,33 @@ export const services = mysqlTable("services", {
 
 export type Service = typeof services.$inferSelect;
 export type InsertService = typeof services.$inferInsert;
+
+/**
+ * Analytics para rastreamento de cliques em serviços
+ */
+export const serviceAnalytics = mysqlTable("service_analytics", {
+  id: int("id").autoincrement().primaryKey(),
+  serviceId: int("serviceId").notNull().references(() => services.id, { onDelete: "cascade" }),
+  clickCount: int("clickCount").default(0).notNull(),
+  lastClickedAt: timestamp("lastClickedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type ServiceAnalytics = typeof serviceAnalytics.$inferSelect;
+export type InsertServiceAnalytics = typeof serviceAnalytics.$inferInsert;
+
+/**
+ * Log de cliques individuais em serviços para análise detalhada
+ */
+export const serviceClickLog = mysqlTable("service_click_log", {
+  id: int("id").autoincrement().primaryKey(),
+  serviceId: int("serviceId").notNull().references(() => services.id, { onDelete: "cascade" }),
+  userAgent: varchar("userAgent", { length: 500 }),
+  referer: varchar("referer", { length: 1024 }),
+  ipAddress: varchar("ipAddress", { length: 45 }),
+  clickedAt: timestamp("clickedAt").defaultNow().notNull(),
+});
+
+export type ServiceClickLog = typeof serviceClickLog.$inferSelect;
+export type InsertServiceClickLog = typeof serviceClickLog.$inferInsert;

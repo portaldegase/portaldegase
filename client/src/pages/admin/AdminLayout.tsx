@@ -17,6 +17,7 @@ const navItems = [
   { href: "/admin/banners", label: "Banners", icon: Image },
   { href: "/admin/videos", label: "Vídeos", icon: Video },
   { href: "/admin/servicos", label: "Serviços", icon: Building2 },
+  { href: "/admin/servicos/analytics", label: "Analytics de Serviços", icon: Building2 },
   { href: "/admin/unidades", label: "Unidades", icon: Building2 },
   { href: "/admin/transparencia", label: "Transparência", icon: Shield },
   { href: "/admin/usuarios", label: "Usuários", icon: Shield },

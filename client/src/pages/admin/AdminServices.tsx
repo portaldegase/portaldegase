@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Trash2, Plus, Edit2, Eye, EyeOff } from "lucide-react";
+import { Trash2, Plus, Edit2, Eye, EyeOff, Upload } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 
 export default function AdminServices() {
@@ -99,15 +99,18 @@ export default function AdminServices() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1">URL do Ícone</label>
-              <input
-                type="text"
-                value={formData.icon}
-                onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
-                placeholder="https://..."
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                required
-              />
+              <label className="block text-sm font-medium mb-1">Ícone do Serviço</label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={formData.icon}
+                  onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
+                  placeholder="https://... ou faça upload"
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                />
+                <IconUploadButton onUpload={(url) => setFormData({ ...formData, icon: url })} />
+              </div>
               {formData.icon && (
                 <div className="mt-2">
                   <img src={formData.icon} alt="Preview" className="h-16 w-16 object-contain" />
@@ -251,5 +254,61 @@ export default function AdminServices() {
         </div>
       )}
     </div>
+  );
+}
+
+
+function IconUploadButton({ onUpload }: { onUpload: (url: string) => void }) {
+  const [isUploading, setIsUploading] = useState(false);
+  const uploadMutation = trpc.upload.image.useMutation();
+
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    try {
+      const base64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+
+      const arrayBuffer = await fetch(base64).then(r => r.arrayBuffer());
+      const result = await uploadMutation.mutateAsync({
+        file: new Uint8Array(arrayBuffer),
+        filename: file.name,
+        mimetype: file.type,
+      });
+
+      onUpload(result.url);
+    } catch (error) {
+      console.error("Erro ao fazer upload:", error);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  return (
+    <label className="cursor-pointer">
+      <input
+        type="file"
+        accept="image/*"
+        onChange={handleFileSelect}
+        className="hidden"
+        disabled={isUploading}
+      />
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        disabled={isUploading}
+        className="gap-2"
+      >
+        <Upload size={16} />
+        {isUploading ? "Enviando..." : "Upload"}
+      </Button>
+    </label>
   );
 }
