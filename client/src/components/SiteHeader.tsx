@@ -72,19 +72,19 @@ export default function SiteHeader() {
 
       {/* Main Header */}
       <div className="w-full text-white" style={{ backgroundColor: "var(--degase-blue-medium)" }}>
-        <div className="container flex items-center justify-between py-3">
+        <div className="container flex items-center justify-between py-3 gap-4">
           {/* Menu Button */}
           <button
             onClick={() => setMenuOpen(!menuOpen)}
-            className="text-white p-2 hover:bg-white/10 rounded-md transition-colors"
+            className="text-white p-2 hover:bg-white/10 rounded-md transition-colors shrink-0"
             aria-label={menuOpen ? "Fechar menu" : "Abrir menu"}
             aria-expanded={menuOpen}
           >
             {menuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
 
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-3" aria-label="DEGASE - Página Inicial">
+          {/* Logo DEGASE */}
+          <Link href="/" className="flex items-center gap-2 shrink-0" aria-label="DEGASE - Página Inicial">
             <img src="https://www.rj.gov.br/degase/sites/default/files/brasao-degase-300.png" alt="DEGASE - Departamento Geral de Ações Socioeducativas" className="h-12 md:h-14 object-contain" />
             <div className="hidden sm:block">
               <div className="text-[10px] uppercase tracking-wider opacity-80">Governo do Estado</div>
@@ -93,8 +93,13 @@ export default function SiteHeader() {
             </div>
           </Link>
 
+          {/* Logo Governo RJ - Center */}
+          <div className="hidden md:flex items-center justify-center flex-1">
+            <img src="https://www.rj.gov.br/degase/sites/default/themes/rjgov/imagens/logo-gov-footer.png" alt="Governo do Estado do Rio de Janeiro" className="h-10 object-contain" />
+          </div>
+
           {/* Search */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
             <form onSubmit={handleSearch} className="hidden md:flex items-center">
               <input
                 type="search"

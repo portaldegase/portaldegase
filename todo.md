@@ -278,3 +278,8 @@
 - [ ] Implementar compressão antes de upload em AdminBanners
 - [ ] Implementar compressão em AdminServices
 - [ ] Implementar compressão em AdminPosts
+
+## Alterações no Cabeçalho
+- [x] Remover 3 campos de texto entre logo DEGASE e busca
+- [x] Adicionar logo do governo RJ no centro do cabeçalho
+- [x] Aproximar logo DEGASE mais à esquerda (próximo ao menu)
