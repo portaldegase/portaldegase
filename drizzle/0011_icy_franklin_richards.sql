@@ -1,0 +1,1 @@
+ALTER TABLE `users` ADD `functionalId` varchar(64);

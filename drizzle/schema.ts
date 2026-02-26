@@ -8,6 +8,7 @@ export const users = mysqlTable("users", {
   openId: varchar("openId", { length: 64 }).notNull().unique(),
   name: text("name"),
   email: varchar("email", { length: 320 }),
+  functionalId: varchar("functionalId", { length: 64 }), // ID Funcional do usuário
   loginMethod: varchar("loginMethod", { length: 64 }),
   role: mysqlEnum("role", ["user", "admin", "contributor"]).default("user").notNull(),
   categoryId: int("categoryId"), // Para contributors: categoria que podem editar

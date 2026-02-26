@@ -78,6 +78,13 @@
       "when": 1772107168523,
       "tag": "0010_heavy_nightshade",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "5",
+      "when": 1772110321299,
+      "tag": "0011_icy_franklin_richards",
+      "breakpoints": true
     }
   ]
 }

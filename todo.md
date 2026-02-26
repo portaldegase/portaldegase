@@ -203,9 +203,20 @@
 ## Responsável por Postagem
 - [x] Adicionar campo de responsável no formulário de criação/edição de notícias
 - [x] Exibir responsável na página de detalhes da notícia
-- [ ] Exibir responsável na listagem de notícias do admin
+- [x] Exibir responsável na listagem de notícias do admin
 - [x] Permitir seleção de responsável (usuário logado ou outro usuário)
 - [x] Exibir responsável na página de listagem pública de notícias
+- [x] Adicionar coluna de responsável na tabela de notícias do admin
+- [x] Implementar filtro por responsável no admin
+- [ ] Implementar filtro por responsável na busca pública
+
+## Cadastro de Usuários
+- [x] Criar página AdminUsers.tsx no painel admin
+- [x] Adicionar campos: Nome Completo, ID Funcional, Categoria, Nível de Acesso
+- [x] Implementar CRUD de usuários (editar, deletar)
+- [x] Adicionar validações de campo
+- [x] Integrar no menu do CMS
+- [x] Adicionar campo functionalId ao schema de usuários
 
 ## Compartilhamento em Redes Sociais
 - [ ] Configuração de credenciais de redes sociais no AdminSettings

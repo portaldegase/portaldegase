@@ -23,9 +23,12 @@ export default function AdminPosts() {
   const [authorId, setAuthorId] = useState<number | undefined>();
   const [status, setStatus] = useState<"draft" | "published" | "archived">("draft");
   const [isFeatured, setIsFeatured] = useState(false);
+  
+  // Filter state
+  const [filterAuthorId, setFilterAuthorId] = useState<number | undefined>();
 
   const utils = trpc.useUtils();
-  const { data, isLoading } = trpc.posts.list.useQuery({ search: search || undefined, limit: 50 });
+  const { data, isLoading } = trpc.posts.list.useQuery({ search: search || undefined, authorId: filterAuthorId, limit: 50 });
   const { data: categories } = trpc.categories.list.useQuery();
   const { data: users } = trpc.users.list.useQuery();
 
@@ -208,17 +211,27 @@ export default function AdminPosts() {
         </Button>
       </div>
 
-      <div className="mb-4 flex items-center gap-2">
-        <div className="relative flex-1 max-w-sm">
+      <div className="mb-4 flex items-center gap-2 flex-wrap">
+        <div className="relative flex-1 min-w-[200px]">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Buscar notícias..."
+            placeholder="Buscar notícias..."
             className="w-full pl-9 pr-3 py-2 border rounded-md text-sm"
           />
         </div>
+        <select
+          value={filterAuthorId ?? ""}
+          onChange={(e) => setFilterAuthorId(e.target.value ? Number(e.target.value) : undefined)}
+          className="px-3 py-2 border rounded-md text-sm"
+        >
+          <option value="">Todos os responsáveis</option>
+          {users?.map((user: any) => (
+            <option key={user.id} value={user.id}>{user.name || user.email}</option>
+          ))}
+        </select>
       </div>
 
       {isLoading ? (
@@ -233,6 +246,7 @@ export default function AdminPosts() {
             <thead className="bg-gray-50">
               <tr>
                 <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Título</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase hidden md:table-cell">Responsável</th>
                 <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase hidden md:table-cell">Status</th>
                 <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase hidden md:table-cell">Data</th>
                 <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase hidden md:table-cell">Views</th>
@@ -245,6 +259,9 @@ export default function AdminPosts() {
                   <td className="px-4 py-3">
                     <p className="font-medium text-sm">{post.title}</p>
                     {post.isFeatured && <span className="text-xs text-yellow-600 font-medium">★ Destaque</span>}
+                  </td>
+                  <td className="px-4 py-3 text-sm text-gray-600 hidden md:table-cell">
+                    {post.authorId ? <AuthorDisplay authorId={post.authorId} /> : "-"}
                   </td>
                   <td className="px-4 py-3 hidden md:table-cell">
                     <span className={`px-2 py-0.5 text-xs rounded-full ${
@@ -294,4 +311,9 @@ export default function AdminPosts() {
       )}
     </div>
   );
+}
+
+function AuthorDisplay({ authorId }: { authorId: number }) {
+  const { data: user } = trpc.users.getById.useQuery({ id: authorId });
+  return <span>{user?.name || user?.email || "Desconhecido"}</span>;
 }
