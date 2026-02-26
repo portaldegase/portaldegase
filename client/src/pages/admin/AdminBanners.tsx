@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Plus, Edit, Trash2, Upload } from "lucide-react";
 import { toast } from "sonner";
+import imageCompression from 'browser-image-compression';
 
 export default function AdminBanners() {
   const [showForm, setShowForm] = useState(false);
@@ -11,6 +12,7 @@ export default function AdminBanners() {
   const [subtitle, setSubtitle] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [linkUrl, setLinkUrl] = useState("");
   const [isActive, setIsActive] = useState(true);
@@ -51,14 +53,27 @@ export default function AdminBanners() {
     }
 
     setImageFile(file);
+    
+    // Create preview
+    const reader = new FileReader();
+    reader.onload = (e) => setImagePreview(e.target?.result as string);
+    reader.readAsDataURL(file);
+    
     setIsUploading(true);
 
     try {
-      const buffer = await file.arrayBuffer();
+      // Compress image
+      const options = {
+        maxSizeMB: 1,
+        maxWidthOrHeight: 1920,
+        useWebWorker: true,
+      };
+      const compressedFile = await imageCompression(file, options);
+      const buffer = await compressedFile.arrayBuffer();
       const result = await uploadMutation.mutateAsync({
         file: new Uint8Array(buffer),
-        filename: file.name,
-        mimetype: file.type,
+        filename: compressedFile.name,
+        mimetype: compressedFile.type,
       });
       setImageUrl(result.url);
       toast.success("Imagem enviada com sucesso!");
@@ -101,8 +116,14 @@ export default function AdminBanners() {
                 />
                 {isUploading && <span className="text-sm text-gray-500">Enviando...</span>}
               </div>
+              {imagePreview && (
+                <div className="mt-3">
+                  <p className="text-xs font-medium mb-2">Preview:</p>
+                  <img src={imagePreview} alt="Preview" className="w-full max-w-md h-auto rounded-md border" />
+                </div>
+              )}
               {imageUrl && <p className="text-xs text-green-600 mt-1">✓ Imagem enviada</p>}
-              <p className="text-xs text-gray-500 mt-1">Formatos: JPG, PNG, WebP | Tamanho ideal: 1920x600 pixels</p>
+              <p className="text-xs text-gray-500 mt-1">Formatos: JPG, PNG, WebP | Tamanho ideal: 1920x600 pixels | Será comprimida automaticamente</p>
             </div>
             <div><label className="block text-sm font-medium mb-1">URL do Link</label><input type="url" value={linkUrl} onChange={(e) => setLinkUrl(e.target.value)} className="w-full px-3 py-2 border rounded-md" /></div>
           </div>

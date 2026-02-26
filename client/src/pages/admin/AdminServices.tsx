@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Trash2, Plus, Edit2, Eye, EyeOff, Upload } from "lucide-react";
 import { trpc } from "@/lib/trpc";
+import imageCompression from 'browser-image-compression';
+import { toast } from "sonner";
 
 export default function AdminServices() {
   const { data: services, refetch } = trpc.services.listAll.useQuery();
@@ -11,6 +13,9 @@ export default function AdminServices() {
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [iconPreview, setIconPreview] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const uploadMutation = trpc.upload.image.useMutation();
   const [formData, setFormData] = useState({
     name: "",
     icon: "",
@@ -70,7 +75,37 @@ export default function AdminServices() {
     });
     setEditingId(null);
     setIsFormOpen(false);
+    setIconPreview(null);
   };
+
+  async function handleIconUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Arquivo muito grande");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => setIconPreview(e.target?.result as string);
+    reader.readAsDataURL(file);
+    setIsUploading(true);
+    try {
+      const options = { maxSizeMB: 0.5, maxWidthOrHeight: 256, useWebWorker: true };
+      const compressedFile = await imageCompression(file, options);
+      const buffer = await compressedFile.arrayBuffer();
+      const result = await uploadMutation.mutateAsync({
+        file: new Uint8Array(buffer),
+        filename: compressedFile.name,
+        mimetype: compressedFile.type,
+      });
+      setFormData({ ...formData, icon: result.url });
+      toast.success("Icone enviado!");
+    } catch (error) {
+      toast.error("Erro ao fazer upload");
+    } finally {
+      setIsUploading(false);
+    }
+  }
 
   return (
     <div>

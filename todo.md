@@ -264,9 +264,9 @@
 
 
 ## Correção de Erros TypeScript
-- [ ] Corrigir campo isFeatured em AdminVideos.tsx
-- [ ] Corrigir enum de status em AdminVideos.tsx
-- [ ] Validar compilação sem erros
+- [x] Corrigir campo isFeatured em AdminVideos.tsx
+- [x] Corrigir enum de status em AdminVideos.tsx
+- [ ] Corrigir erros em AdminAnalytics.tsx
 
 ## Preview de Imagem
 - [ ] Implementar preview de imagem antes de upload em AdminBanners
