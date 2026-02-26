@@ -1,7 +1,7 @@
 import { trpc } from "@/lib/trpc";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Plus, Edit, Trash2 } from "lucide-react";
+import { Plus, Edit, Trash2, Upload } from "lucide-react";
 import { toast } from "sonner";
 
 export default function AdminBanners() {
@@ -10,6 +10,8 @@ export default function AdminBanners() {
   const [title, setTitle] = useState("");
   const [subtitle, setSubtitle] = useState("");
   const [imageUrl, setImageUrl] = useState("");
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
   const [linkUrl, setLinkUrl] = useState("");
   const [isActive, setIsActive] = useState(true);
 
@@ -32,9 +34,44 @@ export default function AdminBanners() {
 
   function editBanner(b: any) { setEditingId(b.id); setTitle(b.title); setSubtitle(b.subtitle || ""); setImageUrl(b.imageUrl); setLinkUrl(b.linkUrl || ""); setIsActive(b.isActive); setShowForm(true); }
 
+  const uploadMutation = trpc.upload.image.useMutation();
+
+  async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("Arquivo muito grande. Máximo 10MB.");
+      return;
+    }
+
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+      toast.error("Formato inválido. Use JPG, PNG ou WebP.");
+      return;
+    }
+
+    setImageFile(file);
+    setIsUploading(true);
+
+    try {
+      const buffer = await file.arrayBuffer();
+      const result = await uploadMutation.mutateAsync({
+        file: new Uint8Array(buffer),
+        filename: file.name,
+        contentType: file.type,
+      });
+      setImageUrl(result.url);
+      toast.success("Imagem enviada com sucesso!");
+    } catch (error) {
+      toast.error("Erro ao fazer upload da imagem.");
+    } finally {
+      setIsUploading(false);
+    }
+  }
+
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!title.trim() || !imageUrl.trim()) { toast.error("Título e URL da imagem são obrigatórios."); return; }
+    if (!title.trim() || !imageUrl.trim()) { toast.error("Título e imagem são obrigatórios."); return; }
     if (editingId) { updateMutation.mutate({ id: editingId, title, subtitle: subtitle || undefined, imageUrl, linkUrl: linkUrl || undefined, isActive }); }
     else { createMutation.mutate({ title, subtitle: subtitle || undefined, imageUrl, linkUrl: linkUrl || undefined, isActive }); }
   }
@@ -52,7 +89,21 @@ export default function AdminBanners() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div><label className="block text-sm font-medium mb-1">Título *</label><input type="text" value={title} onChange={(e) => setTitle(e.target.value)} className="w-full px-3 py-2 border rounded-md" required /></div>
             <div><label className="block text-sm font-medium mb-1">Subtítulo</label><input type="text" value={subtitle} onChange={(e) => setSubtitle(e.target.value)} className="w-full px-3 py-2 border rounded-md" /></div>
-            <div><label className="block text-sm font-medium mb-1">URL da Imagem *</label><input type="url" value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} className="w-full px-3 py-2 border rounded-md" required /></div>
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium mb-1">Imagem do Banner * (Máx 10MB, Ideal: 1920x600px)</label>
+              <div className="flex gap-2">
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  onChange={handleImageUpload}
+                  disabled={isUploading}
+                  className="flex-1 px-3 py-2 border rounded-md"
+                />
+                {isUploading && <span className="text-sm text-gray-500">Enviando...</span>}
+              </div>
+              {imageUrl && <p className="text-xs text-green-600 mt-1">✓ Imagem enviada</p>}
+              <p className="text-xs text-gray-500 mt-1">Formatos: JPG, PNG, WebP | Tamanho ideal: 1920x600 pixels</p>
+            </div>
             <div><label className="block text-sm font-medium mb-1">URL do Link</label><input type="url" value={linkUrl} onChange={(e) => setLinkUrl(e.target.value)} className="w-full px-3 py-2 border rounded-md" /></div>
           </div>
           <div className="flex items-center gap-2">

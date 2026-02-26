@@ -252,3 +252,12 @@
 - [x] Remover filtros de logos e imagens
 - [x] Testar visual em todo o portal (público e admin)
 - [x] Validar em diferentes navegadores
+
+
+## Upload de Imagens para Banners
+- [x] Adicionar campo de upload de imagem no formulário de banners
+- [x] Implementar validação de tamanho (10MB máximo)
+- [x] Validar tipos de arquivo (JPG, PNG, WebP)
+- [x] Adicionar informações sobre tamanho ideal do banner (1920x600px)
+- [x] Remover campo de URL de imagem
+- [x] Integrar upload para S3
