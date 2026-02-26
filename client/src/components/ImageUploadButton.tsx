@@ -45,10 +45,10 @@ export default function ImageUploadButton({ onImageUpload, disabled = false }: I
       return;
     }
 
-    // Validar tamanho (máximo 5MB)
-    const maxSize = 5 * 1024 * 1024;
+    // Validar tamanho (máximo 10MB)
+    const maxSize = 10 * 1024 * 1024;
     if (file.size > maxSize) {
-      toast.error("Arquivo muito grande. Máximo 5MB.");
+      toast.error("Arquivo muito grande. Máximo 10MB.");
       return;
     }
 
@@ -125,7 +125,7 @@ export default function ImageUploadButton({ onImageUpload, disabled = false }: I
       )}
 
       <p className="text-xs text-gray-500">
-        Máximo 5MB • JPEG, PNG, WebP ou GIF • Você poderá editar antes de enviar
+        Máximo 10MB • JPEG, PNG, WebP ou GIF • Você poderá editar antes de enviar
       </p>
 
       {/* Image Editor Modal */}

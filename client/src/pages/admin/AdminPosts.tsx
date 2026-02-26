@@ -4,6 +4,7 @@ import { Plus, Edit, Trash2, Eye, Search } from "lucide-react";
 import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
 import RichTextEditor from "@/components/RichTextEditor";
+import ImageUploadButton from "@/components/ImageUploadButton";
 
 function slugify(text: string): string {
   return text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
@@ -162,16 +163,16 @@ export default function AdminPosts() {
                 <option value="archived">Arquivado</option>
               </select>
             </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Imagem Destacada (URL)</label>
-              <input
-                type="url"
-                value={featuredImage}
-                onChange={(e) => setFeaturedImage(e.target.value)}
-                className="w-full px-3 py-2 border rounded-md"
-                placeholder="https://..."
-              />
-            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1">Imagem Destacada</label>
+            <ImageUploadButton onImageUpload={setFeaturedImage} />
+            {featuredImage && (
+              <div className="mt-2">
+                <img src={featuredImage} alt="Preview" className="max-w-xs h-auto rounded-md border" />
+              </div>
+            )}
           </div>
 
           <div className="flex items-center gap-2">

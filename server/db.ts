@@ -417,6 +417,12 @@ export async function updateUserRole(id: number, role: string, categoryId?: numb
   await db.update(users).set({ role: role as any, categoryId }).where(eq(users.id, id));
 }
 
+export async function updateUser(id: number, data: Partial<InsertUser>) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  await db.update(users).set({ ...data, updatedAt: new Date() }).where(eq(users.id, id));
+}
+
 export async function deleteUser(id: number) {
   const db = await getDb();
   if (!db) throw new Error("DB not available");

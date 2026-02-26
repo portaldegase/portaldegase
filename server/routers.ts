@@ -31,6 +31,43 @@ export const appRouter = router({
   users: router({
     list: adminProcedure.query(async () => db.listUsers()),
     getById: adminProcedure.input(z.object({ id: z.number() })).query(async ({ input }) => db.getUserById(input.id)),
+    create: adminProcedure.input(z.object({
+      openId: z.string().min(1),
+      name: z.string().optional(),
+      email: z.string().email().optional(),
+      functionalId: z.string().optional(),
+      role: z.enum(['user', 'admin', 'contributor']).default('user'),
+      categoryId: z.number().optional(),
+    })).mutation(async ({ input }) => {
+      const existingUser = await db.getUserByOpenId(input.openId);
+      if (existingUser) {
+        throw new TRPCError({ code: 'CONFLICT', message: 'Usuário com este openId já existe' });
+      }
+      await db.upsertUser({
+        openId: input.openId,
+        name: input.name || null,
+        email: input.email || null,
+        role: input.role,
+        categoryId: input.categoryId,
+      });
+      return { success: true };
+    }),
+    update: adminProcedure.input(z.object({
+      id: z.number(),
+      name: z.string().optional(),
+      email: z.string().email().optional(),
+      functionalId: z.string().optional(),
+      role: z.enum(['user', 'admin', 'contributor']).optional(),
+      categoryId: z.number().optional(),
+    })).mutation(async ({ input }) => {
+      const { id, ...data } = input;
+      const user = await db.getUserById(id);
+      if (!user) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Usuário não encontrado' });
+      }
+      await db.updateUser(id, data);
+      return { success: true };
+    }),
   }),
 
   categories: router({
@@ -387,9 +424,9 @@ export const appRouter = router({
       filename: z.string(),
       mimetype: z.string(),
     })).mutation(async ({ input }) => {
-      const maxSize = 5 * 1024 * 1024;
+      const maxSize = 10 * 1024 * 1024;
       if (input.file.length > maxSize) {
-        throw new TRPCError({ code: 'BAD_REQUEST', message: 'Arquivo muito grande. Maximo 5MB.' });
+        throw new TRPCError({ code: 'BAD_REQUEST', message: 'Arquivo muito grande. Maximo 10MB.' });
       }
       try {
         const { storagePut } = await import('./storage');

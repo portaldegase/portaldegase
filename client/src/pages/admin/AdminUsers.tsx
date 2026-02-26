@@ -1,14 +1,16 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Trash2, Edit2, Search } from "lucide-react";
+import { Trash2, Edit2, Search, Plus } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 
 export default function AdminUsers() {
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [isCreating, setIsCreating] = useState(false);
   const [search, setSearch] = useState("");
   
   // Form state
+  const [openId, setOpenId] = useState("");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [functionalId, setFunctionalId] = useState("");
@@ -17,6 +19,19 @@ export default function AdminUsers() {
 
   const listUsers = trpc.users.list.useQuery();
   const listCategories = trpc.categories.list.useQuery();
+  
+  const createUserMutation = trpc.users.create.useMutation({
+    onSuccess: () => {
+      toast.success("Usuário criado com sucesso!");
+      listUsers.refetch();
+      resetForm();
+      setIsCreating(false);
+    },
+    onError: (error) => {
+      toast.error(`Erro: ${error.message}`);
+    },
+  });
+
   const updateUserMutation = trpc.users.update.useMutation({
     onSuccess: () => {
       toast.success("Usuário atualizado com sucesso!");
@@ -27,6 +42,7 @@ export default function AdminUsers() {
       toast.error(`Erro: ${error.message}`);
     },
   });
+
   const deleteUserMutation = trpc.users.delete.useMutation({
     onSuccess: () => {
       toast.success("Usuário deletado com sucesso!");
@@ -39,6 +55,8 @@ export default function AdminUsers() {
 
   function resetForm() {
     setEditingId(null);
+    setIsCreating(false);
+    setOpenId("");
     setName("");
     setEmail("");
     setFunctionalId("");
@@ -47,6 +65,7 @@ export default function AdminUsers() {
   }
 
   function editUser(user: any) {
+    setIsCreating(false);
     setEditingId(user.id);
     setName(user.name || "");
     setEmail(user.email || "");
@@ -55,14 +74,35 @@ export default function AdminUsers() {
     setRole(user.role);
   }
 
+  function handleCreateClick() {
+    setIsCreating(true);
+    setEditingId(null);
+    setOpenId("");
+    setName("");
+    setEmail("");
+    setFunctionalId("");
+    setCategoryId(undefined);
+    setRole("user");
+  }
+
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!editingId) {
-      toast.error("Selecione um usuário para editar.");
-      return;
+    
+    if (isCreating) {
+      if (!openId.trim()) {
+        toast.error("OpenID é obrigatório para criar um novo usuário.");
+        return;
+      }
+      const data = { openId, name: name || undefined, email: email || undefined, functionalId: functionalId || undefined, role, categoryId };
+      createUserMutation.mutate(data);
+    } else {
+      if (!editingId) {
+        toast.error("Selecione um usuário para editar.");
+        return;
+      }
+      const data = { name, email, functionalId: functionalId || undefined, categoryId, role };
+      updateUserMutation.mutate({ id: editingId, ...data });
     }
-    const data = { name, email, functionalId: functionalId || undefined, categoryId, role };
-    updateUserMutation.mutate({ id: editingId, ...data });
   }
 
   const handleDeleteUser = async (id: number) => {
@@ -96,7 +136,13 @@ export default function AdminUsers() {
         {/* User List */}
         <div className="lg:col-span-2 bg-white rounded-lg border">
           <div className="p-6 border-b">
-            <h2 className="text-xl font-bold mb-4">Usuários do Sistema</h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold">Usuários do Sistema</h2>
+              <Button onClick={handleCreateClick} size="sm" style={{ backgroundColor: "var(--degase-blue-dark)" }}>
+                <Plus size={16} className="mr-2" />
+                Novo Usuário
+              </Button>
+            </div>
             <div className="relative">
               <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
               <input
@@ -167,33 +213,47 @@ export default function AdminUsers() {
           </div>
         </div>
 
-        {/* Edit Panel */}
+        {/* Edit/Create Panel */}
         <div className="bg-white rounded-lg border p-6">
           <h2 className="text-xl font-bold mb-4">
-            {editingId ? "Editar Usuário" : "Selecione um usuário"}
+            {isCreating ? "Criar Novo Usuário" : editingId ? "Editar Usuário" : "Selecione um usuário"}
           </h2>
           
-          {editingId ? (
+          {isCreating || editingId ? (
             <form onSubmit={handleSubmit} className="space-y-4">
+              {isCreating && (
+                <div>
+                  <label className="block text-sm font-medium mb-1">OpenID *</label>
+                  <input
+                    type="text"
+                    value={openId}
+                    onChange={(e) => setOpenId(e.target.value)}
+                    className="w-full px-3 py-2 border rounded-md text-sm"
+                    placeholder="ID único do usuário"
+                    required
+                  />
+                </div>
+              )}
+
               <div>
-                <label className="block text-sm font-medium mb-1">Nome Completo *</label>
+                <label className="block text-sm font-medium mb-1">Nome Completo {!isCreating && "*"}</label>
                 <input
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className="w-full px-3 py-2 border rounded-md text-sm"
-                  required
+                  required={!isCreating}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1">Email *</label>
+                <label className="block text-sm font-medium mb-1">Email {!isCreating && "*"}</label>
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full px-3 py-2 border rounded-md text-sm"
-                  required
+                  required={!isCreating}
                 />
               </div>
 
@@ -238,9 +298,9 @@ export default function AdminUsers() {
               )}
 
               <div className="flex gap-2 pt-4">
-                <Button type="submit" disabled={updateUserMutation.isPending} className="flex-1"
+                <Button type="submit" disabled={createUserMutation.isPending || updateUserMutation.isPending} className="flex-1"
                   style={{ backgroundColor: "var(--degase-blue-dark)" }}>
-                  {updateUserMutation.isPending ? "Salvando..." : "Atualizar"}
+                  {createUserMutation.isPending || updateUserMutation.isPending ? "Salvando..." : isCreating ? "Criar" : "Atualizar"}
                 </Button>
                 <Button type="button" variant="outline" onClick={resetForm} className="flex-1">
                   Cancelar
@@ -249,7 +309,7 @@ export default function AdminUsers() {
             </form>
           ) : (
             <p className="text-sm text-gray-500 text-center py-8">
-              Selecione um usuário na lista para editar suas informações
+              Selecione um usuário na lista para editar suas informações ou clique em "Novo Usuário" para criar um novo
             </p>
           )}
 
