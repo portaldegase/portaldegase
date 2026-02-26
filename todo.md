@@ -245,3 +245,10 @@
 - [x] Exibir ícones com cores nos cards de serviços
 - [x] Exibir ícones com cores nos cards de transparência
 - [x] Validar visual em diferentes resoluções
+
+
+## Remoção de Filtros CSS de Silhueta Branca
+- [x] Encontrar todos os filtros brightness-0 invert no código
+- [x] Remover filtros de logos e imagens
+- [x] Testar visual em todo o portal (público e admin)
+- [x] Validar em diferentes navegadores
