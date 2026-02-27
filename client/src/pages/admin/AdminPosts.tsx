@@ -1,11 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Plus, Edit, Trash2, Eye, Search } from "lucide-react";
+import { Plus, Edit, Trash2, Eye, Search, Clock } from "lucide-react";
 import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
 import RichTextEditor from "@/components/RichTextEditor";
 import ImageUploadButton from "@/components/ImageUploadButton";
 import imageCompression from 'browser-image-compression';
+import { useAutosave } from "@/hooks/useAutosave";
 
 function slugify(text: string): string {
   return text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
@@ -52,6 +53,32 @@ export default function AdminPosts() {
   });
 
   const uploadMutation = trpc.upload.image.useMutation();
+  const saveDraftMutation = trpc.posts.saveDraft.useMutation();
+  const getHistoryQuery = editingId ? trpc.posts.getHistory.useQuery({ postId: editingId }) : null;
+  const [showVersionHistory, setShowVersionHistory] = useState(false);
+  const [lastSavedTime, setLastSavedTime] = useState<Date | null>(null);
+
+  const { isSaving, lastSaved, saveNow } = useAutosave(
+    { title, content, excerpt, featuredImage, categoryId, isFeatured },
+    {
+      key: `post_draft_${editingId || 'new'}`,
+      debounceMs: 3000,
+      onSave: async (data: any) => {
+        if (!title.trim() || !content.trim()) return;
+        await saveDraftMutation.mutateAsync({
+          id: editingId || undefined,
+          title,
+          excerpt,
+          content,
+          featuredImage,
+          categoryId,
+          isFeatured,
+          slug: editingId ? undefined : slugify(title),
+        });
+        setLastSavedTime(new Date());
+      },
+    }
+  );
 
   async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -136,10 +163,33 @@ export default function AdminPosts() {
     return (
       <div>
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold" style={{ color: "var(--degase-blue-dark)" }}>
-            {editingId ? "Editar Notícia" : "Nova Notícia"}
-          </h1>
-          <Button variant="outline" onClick={resetForm}>Cancelar</Button>
+          <div>
+            <h1 className="text-2xl font-bold" style={{ color: "var(--degase-blue-dark)" }}>
+              {editingId ? "Editar Notícia" : "Nova Notícia"}
+            </h1>
+            <div className="flex items-center gap-2 mt-2 text-sm text-gray-500">
+              <Clock size={14} />
+              {isSaving ? (
+                <span>Salvando rascunho...</span>
+              ) : lastSavedTime ? (
+                <span>Último salvamento: {lastSavedTime.toLocaleTimeString('pt-BR')}</span>
+              ) : (
+                <span>Rascunho será salvo automaticamente</span>
+              )}
+            </div>
+          </div>
+          <div className="flex gap-2">
+            {editingId && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowVersionHistory(!showVersionHistory)}
+              >
+                Histórico de Versões
+              </Button>
+            )}
+            <Button variant="outline" onClick={resetForm}>Cancelar</Button>
+          </div>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -254,6 +304,30 @@ export default function AdminPosts() {
             <Button type="button" variant="outline" onClick={resetForm}>Cancelar</Button>
           </div>
         </form>
+
+        {showVersionHistory && getHistoryQuery && getHistoryQuery.data && (
+          <div className="mt-8 p-4 bg-gray-50 rounded-lg border">
+            <h2 className="text-lg font-bold mb-4">Historico de Versoes</h2>
+            <div className="space-y-3 max-h-96 overflow-y-auto">
+              {getHistoryQuery.data.length > 0 ? (
+                getHistoryQuery.data.map((version: any) => (
+                  <div key={version.id} className="p-3 bg-white rounded border text-sm">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-medium">{version.changeDescription}</p>
+                        <p className="text-xs text-gray-500">
+                          {new Date(version.createdAt).toLocaleString('pt-BR')}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className="text-gray-500 text-sm">Nenhuma versao anterior</p>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     );
   }

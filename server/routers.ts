@@ -248,6 +248,85 @@ export const appRouter = router({
       }
       return { items: await db.getScheduledPostsForUser(ctx.user.id), total: 0 };
     }),
+    saveDraft: editorProcedure.input(z.object({
+      id: z.number().optional(),
+      title: z.string().min(1),
+      excerpt: z.string().optional(),
+      content: z.string().min(1),
+      featuredImage: z.string().optional(),
+      categoryId: z.number().optional(),
+      isFeatured: z.boolean().optional(),
+      slug: z.string().optional(),
+    })).mutation(async ({ input, ctx }) => {
+      if (input.id) {
+        const post = await db.getPostById(input.id);
+        if (!post) throw new TRPCError({ code: 'NOT_FOUND', message: 'Post nao encontrado' });
+        if (ctx.user.role !== 'admin' && post.authorId !== ctx.user.id) {
+          throw new TRPCError({ code: 'FORBIDDEN', message: 'Voce nao tem permissao para editar este post' });
+        }
+        const updated = await db.updatePost(input.id, {
+          title: input.title,
+          excerpt: input.excerpt,
+          content: input.content,
+          featuredImage: input.featuredImage,
+          categoryId: input.categoryId,
+          isFeatured: input.isFeatured,
+          status: 'draft',
+        });
+        await db.createPostHistory(input.id, {
+          title: updated.title,
+          excerpt: updated.excerpt,
+          content: updated.content,
+          featuredImage: updated.featuredImage,
+          status: 'draft',
+          isFeatured: updated.isFeatured,
+          editorId: ctx.user.id,
+          changeDescription: 'Rascunho salvo automaticamente',
+        });
+        return updated;
+      } else {
+        const slug = input.slug || slugify(input.title);
+        const post = await db.createPost({
+          title: input.title,
+          slug,
+          excerpt: input.excerpt,
+          content: input.content,
+          featuredImage: input.featuredImage,
+          categoryId: input.categoryId,
+          isFeatured: input.isFeatured,
+          status: 'draft',
+          authorId: ctx.user.id,
+        });
+        await db.createPostHistory(post.id, {
+          title: post.title,
+          excerpt: post.excerpt,
+          content: post.content,
+          featuredImage: post.featuredImage,
+          status: 'draft',
+          isFeatured: post.isFeatured,
+          editorId: ctx.user.id,
+          changeDescription: 'Rascunho criado automaticamente',
+        });
+        return post;
+      }
+    }),
+    getHistory: editorProcedure.input(z.object({ postId: z.number() })).query(async ({ input, ctx }) => {
+      const post = await db.getPostById(input.postId);
+      if (!post) throw new TRPCError({ code: 'NOT_FOUND', message: 'Post nao encontrado' });
+      if (ctx.user.role !== 'admin' && post.authorId !== ctx.user.id) {
+        throw new TRPCError({ code: 'FORBIDDEN', message: 'Voce nao tem permissao para ver o historico deste post' });
+      }
+      return db.getPostHistory(input.postId);
+    }),
+    revertToDraft: editorProcedure.input(z.object({ postId: z.number(), historyId: z.number() })).mutation(async ({ input, ctx }) => {
+      const post = await db.getPostById(input.postId);
+      if (!post) throw new TRPCError({ code: 'NOT_FOUND', message: 'Post nao encontrado' });
+      if (ctx.user.role !== 'admin' && post.authorId !== ctx.user.id) {
+        throw new TRPCError({ code: 'FORBIDDEN', message: 'Voce nao tem permissao para reverter este post' });
+      }
+      await db.revertPostToVersion(input.postId, input.historyId, ctx.user.id);
+      return { success: true };
+    }),
   }),
 
   pages: router({

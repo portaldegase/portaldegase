@@ -283,3 +283,11 @@
 - [x] Remover 3 campos de texto entre logo DEGASE e busca
 - [x] Adicionar logo do governo RJ no centro do cabeçalho
 - [x] Aproximar logo DEGASE mais à esquerda (próximo ao menu)
+
+## Salvamento Automatico de Rascunho
+- [x] Adicionar procedimento saveDraft em routers.ts
+- [x] Adicionar procedimento getHistory em routers.ts
+- [x] Adicionar procedimento revertToDraft em routers.ts
+- [x] Integrar useAutosave em AdminPosts.tsx
+- [x] Adicionar indicador de salvamento automático no cabeçalho
+- [x] Adicionar seção de histórico de versões
