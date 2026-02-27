@@ -403,3 +403,42 @@ export const serviceClickLog = mysqlTable("service_click_log", {
 
 export type ServiceClickLog = typeof serviceClickLog.$inferSelect;
 export type InsertServiceClickLog = typeof serviceClickLog.$inferInsert;
+
+
+/**
+ * Document Categories - categorias específicas para documentos
+ */
+export const documentCategories = mysqlTable("document_categories", {
+  id: int("id").autoincrement().primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  slug: varchar("slug", { length: 255 }).notNull().unique(),
+  description: text("description"),
+  sortOrder: int("sortOrder").default(0).notNull(),
+  isActive: boolean("isActive").default(true).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type DocumentCategory = typeof documentCategories.$inferSelect;
+export type InsertDocumentCategory = typeof documentCategories.$inferInsert;
+
+/**
+ * Documents - arquivos de documentos com categorização
+ */
+export const documents = mysqlTable("documents", {
+  id: int("id").autoincrement().primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  categoryId: int("categoryId").notNull().references(() => documentCategories.id, { onDelete: "restrict" }),
+  fileUrl: varchar("fileUrl", { length: 1024 }).notNull(),
+  fileKey: varchar("fileKey", { length: 1024 }).notNull(), // Chave no S3
+  fileSize: int("fileSize").notNull(), // Tamanho em bytes
+  mimeType: varchar("mimeType", { length: 100 }).notNull(),
+  uploadedBy: int("uploadedBy").notNull().references(() => users.id, { onDelete: "restrict" }),
+  isActive: boolean("isActive").default(true).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Document = typeof documents.$inferSelect;
+export type InsertDocument = typeof documents.$inferInsert;

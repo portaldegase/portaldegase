@@ -20,6 +20,8 @@ import {
   services, InsertService,
   serviceAnalytics, InsertServiceAnalytics,
   serviceClickLog, InsertServiceClickLog,
+  documents, InsertDocument,
+  documentCategories, InsertDocumentCategory,
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -975,4 +977,85 @@ export async function getServiceClickStats(serviceId: number) {
     recentClicks: recentClicks[0]?.count || 0,
     lastClickedAt: analytics.lastClickedAt,
   };
+}
+
+
+// ==================== DOCUMENT CATEGORIES ====================
+export async function listDocumentCategories() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(documentCategories).where(eq(documentCategories.isActive, true)).orderBy(asc(documentCategories.sortOrder));
+}
+
+export async function createDocumentCategory(data: InsertDocumentCategory) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.insert(documentCategories).values(data);
+  const id = result[0].insertId;
+  return db.select().from(documentCategories).where(eq(documentCategories.id, Number(id))).limit(1).then(r => r[0]);
+}
+
+export async function updateDocumentCategory(id: number, data: Partial<InsertDocumentCategory>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(documentCategories).set(data).where(eq(documentCategories.id, id));
+  return db.select().from(documentCategories).where(eq(documentCategories.id, id)).limit(1).then(r => r[0]);
+}
+
+export async function deleteDocumentCategory(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.delete(documentCategories).where(eq(documentCategories.id, id));
+}
+
+// ==================== DOCUMENTS ====================
+export async function listDocuments() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(documents).where(eq(documents.isActive, true)).orderBy(desc(documents.createdAt));
+}
+
+export async function listDocumentsByCategory(categoryId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(documents)
+    .where(and(eq(documents.categoryId, categoryId), eq(documents.isActive, true)))
+    .orderBy(desc(documents.createdAt));
+}
+
+export async function createDocument(data: InsertDocument) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.insert(documents).values(data);
+  const id = result[0].insertId;
+  return db.select().from(documents).where(eq(documents.id, Number(id))).limit(1).then(r => r[0]);
+}
+
+export async function updateDocument(id: number, data: Partial<InsertDocument>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(documents).set(data).where(eq(documents.id, id));
+  return db.select().from(documents).where(eq(documents.id, id)).limit(1).then(r => r[0]);
+}
+
+export async function deleteDocument(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.delete(documents).where(eq(documents.id, id));
+}
+
+export async function getDocumentById(id: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.select().from(documents).where(eq(documents.id, id)).limit(1);
+  return result.length > 0 ? result[0] : null;
+}
+
+export async function getDocumentsWithCategories() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(documents)
+    .innerJoin(documentCategories, eq(documents.categoryId, documentCategories.id))
+    .where(and(eq(documents.isActive, true), eq(documentCategories.isActive, true)))
+    .orderBy(asc(documentCategories.sortOrder), desc(documents.createdAt));
 }

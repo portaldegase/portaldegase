@@ -338,3 +338,20 @@
 - [ ] Criar procedimento para verificar conflito de edição
 - [ ] Implementar notificação visual de conflito
 - [ ] Implementar lógica de lock/unlock de edição
+
+
+## Sistema de Gerenciamento de Documentos
+- [ ] Criar schema de documentos no banco de dados
+- [ ] Criar schema de categorias de documentos
+- [ ] Implementar routers tRPC para CRUD de documentos
+- [ ] Implementar routers tRPC para CRUD de categorias de documentos
+- [ ] Criar página AdminDocuments.tsx com upload
+- [ ] Implementar validação de tamanho (máx 40MB)
+- [ ] Implementar seleção obrigatória de categoria
+- [ ] Criar página pública de listagem de documentos
+- [ ] Exibir documentos separados por categorias
+- [ ] Implementar funcionalidade de download
+- [ ] Exibir tamanho do arquivo
+- [ ] Adicionar entrada no menu administrativo
+- [ ] Adicionar entrada no menu público
+- [ ] Integrar atualização automática de listagem ao enviar documento

@@ -805,6 +805,85 @@ export const appRouter = router({
       return { success: true };
     })
   }),
+
+  documentCategories: router({
+    list: publicProcedure.query(async () => db.listDocumentCategories()),
+    create: adminProcedure.input(z.object({
+      name: z.string().min(1),
+      description: z.string().optional(),
+      sortOrder: z.number().optional(),
+    })).mutation(async ({ input }) => {
+      const slug = slugify(input.name);
+      return db.createDocumentCategory({
+        name: input.name,
+        slug,
+        description: input.description,
+        sortOrder: input.sortOrder || 0,
+      });
+    }),
+    update: adminProcedure.input(z.object({
+      id: z.number(),
+      name: z.string().optional(),
+      description: z.string().optional(),
+      sortOrder: z.number().optional(),
+      isActive: z.boolean().optional(),
+    })).mutation(async ({ input }) => {
+      const { id, ...data } = input;
+      return db.updateDocumentCategory(id, data);
+    }),
+    delete: adminProcedure.input(z.object({ id: z.number() })).mutation(async ({ input }) => {
+      await db.deleteDocumentCategory(input.id);
+      return { success: true };
+    }),
+  }),
+
+  documents: router({
+    list: publicProcedure.query(async () => db.getDocumentsWithCategories()),
+    listByCategory: publicProcedure.input(z.object({ categoryId: z.number() })).query(async ({ input }) => db.listDocumentsByCategory(input.categoryId)),
+    create: protectedProcedure.input(z.object({
+      name: z.string().min(1),
+      description: z.string().optional(),
+      categoryId: z.number().min(1),
+      fileUrl: z.string().min(1),
+      fileKey: z.string().min(1),
+      fileSize: z.number().min(1),
+      mimeType: z.string().min(1),
+    })).mutation(async ({ input, ctx }) => {
+      if (ctx.user.role !== 'admin' && ctx.user.role !== 'contributor') {
+        throw new TRPCError({ code: 'FORBIDDEN', message: 'Acesso restrito' });
+      }
+      return db.createDocument({
+        name: input.name,
+        description: input.description,
+        categoryId: input.categoryId,
+        fileUrl: input.fileUrl,
+        fileKey: input.fileKey,
+        fileSize: input.fileSize,
+        mimeType: input.mimeType,
+        uploadedBy: ctx.user.id,
+      });
+    }),
+    update: protectedProcedure.input(z.object({
+      id: z.number(),
+      name: z.string().optional(),
+      description: z.string().optional(),
+      categoryId: z.number().optional(),
+      isActive: z.boolean().optional(),
+    })).mutation(async ({ input, ctx }) => {
+      if (ctx.user.role !== 'admin' && ctx.user.role !== 'contributor') {
+        throw new TRPCError({ code: 'FORBIDDEN', message: 'Acesso restrito' });
+      }
+      const { id, ...data } = input;
+      return db.updateDocument(id, data);
+    }),
+    delete: protectedProcedure.input(z.object({ id: z.number() })).mutation(async ({ input, ctx }) => {
+      if (ctx.user.role !== 'admin' && ctx.user.role !== 'contributor') {
+        throw new TRPCError({ code: 'FORBIDDEN', message: 'Acesso restrito' });
+      }
+      await db.deleteDocument(input.id);
+      return { success: true };
+    }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;

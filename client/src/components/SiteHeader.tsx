@@ -176,6 +176,7 @@ export default function SiteHeader() {
                 { href: "/sobre", label: "Sobre o DEGASE" },
                 { href: "/servicos", label: "Serviços" },
                 { href: "/legislacao", label: "Legislação" },
+                { href: "/documentos", label: "Documentos" },
                 { href: "/transparencia", label: "Transparência" },
                 { href: "/unidades", label: "Unidades" },
                 { href: "/contato", label: "Contato" },

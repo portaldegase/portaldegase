@@ -20,6 +20,7 @@ import SearchResults from "./pages/SearchResults";
 import InstitutionalPage from "./pages/InstitutionalPage";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
+import Documents from "./pages/Documents";
 
 // Admin pages
 import AdminLayout from "./pages/admin/AdminLayout";
@@ -35,6 +36,7 @@ import AdminUnits from "./pages/admin/AdminUnits";
 import AdminTransparency from "./pages/admin/AdminTransparency";
 import AdminSettings from "./pages/admin/AdminSettings";
 import AdminUsers from "./pages/admin/AdminUsers";
+import AdminDocuments from "./pages/admin/AdminDocuments";
 
 // Layout components
 import SiteHeader from "./components/SiteHeader";
@@ -85,6 +87,7 @@ function Router() {
       <Route path="/privacidade">{() => <PublicPage component={Privacy} />}</Route>
       <Route path="/termos">{() => <PublicPage component={Terms} />}</Route>
       <Route path="/pagina/:slug">{() => <PublicPage component={InstitutionalPage} />}</Route>
+      <Route path="/documentos">{() => <PublicPage component={Documents} />}</Route>
 
       {/* Admin routes */}
       <Route path="/admin">{() => <AdminPage component={AdminDashboard} />}</Route>
@@ -99,6 +102,7 @@ function Router() {
       <Route path="/admin/transparencia">{() => <AdminPage component={AdminTransparency} />}</Route>
       <Route path="/admin/usuarios">{() => <AdminPage component={AdminUsers} />}</Route>
       <Route path="/admin/configuracoes">{() => <AdminPage component={AdminSettings} />}</Route>
+      <Route path="/admin/documentos">{() => <AdminPage component={AdminDocuments} />}</Route>
 
       {/* 404 */}
       <Route path="/404" component={NotFound} />
