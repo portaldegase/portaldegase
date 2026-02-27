@@ -246,13 +246,11 @@
 - [x] Exibir ícones com cores nos cards de transparência
 - [x] Validar visual em diferentes resoluções
 
-
 ## Remoção de Filtros CSS de Silhueta Branca
 - [x] Encontrar todos os filtros brightness-0 invert no código
 - [x] Remover filtros de logos e imagens
 - [x] Testar visual em todo o portal (público e admin)
 - [x] Validar em diferentes navegadores
-
 
 ## Upload de Imagens para Banners
 - [x] Adicionar campo de upload de imagem no formulário de banners
@@ -261,7 +259,6 @@
 - [x] Adicionar informações sobre tamanho ideal do banner (1920x600px)
 - [x] Remover campo de URL de imagem
 - [x] Integrar upload para S3
-
 
 ## Correção de Erros TypeScript
 - [x] Corrigir campo isFeatured em AdminVideos.tsx
@@ -284,7 +281,7 @@
 - [x] Adicionar logo do governo RJ no centro do cabeçalho
 - [x] Aproximar logo DEGASE mais à esquerda (próximo ao menu)
 
-## Salvamento Automatico de Rascunho
+## Salvamento Automatico de Rascunho em AdminPosts
 - [x] Adicionar procedimento saveDraft em routers.ts
 - [x] Adicionar procedimento getHistory em routers.ts
 - [x] Adicionar procedimento revertToDraft em routers.ts
@@ -293,28 +290,51 @@
 - [x] Adicionar seção de histórico de versões
 
 ## Salvamento Automatico em AdminPages
-- [ ] Adicionar procedimento saveDraftPage em routers.ts
-- [ ] Adicionar procedimento getPageHistory em routers.ts
-- [ ] Integrar useAutosave em AdminPages.tsx
-- [ ] Adicionar indicador de salvamento automático em AdminPages
-- [ ] Adicionar seção de histórico de versões em AdminPages
+- [x] Adicionar procedimento saveDraftPage em routers.ts
+- [x] Adicionar procedimento getPageHistory em routers.ts
+- [x] Integrar useAutosave em AdminPages.tsx
+- [x] Adicionar indicador de salvamento automático em AdminPages
+- [x] Adicionar seção de histórico de versões em AdminPages
 
-## Notificacoes de Conflito de Edicao
-- [ ] Adicionar tabela de active_editors no banco de dados
-- [ ] Criar procedimento para registrar editor ativo
-- [ ] Criar procedimento para verificar conflito de edição
-- [ ] Implementar notificação visual de conflito
-- [ ] Implementar lógica de lock/unlock de edição
+## FASES PENDENTES
 
-## Painel de Analise de Rascunhos
+## Fase 2 - Preview e Compressao em AdminVideos e AdminMediaGallery
+- [ ] Adicionar preview de thumbnail em AdminVideos
+- [ ] Implementar compressão de thumbnail em AdminVideos
+- [ ] Adicionar validação de arquivo em AdminVideos
+- [ ] Adicionar preview de imagem em AdminMediaGallery
+- [ ] Implementar compressão de imagem em AdminMediaGallery
+- [ ] Adicionar validação de arquivo em AdminMediaGallery
+
+## Fase 3 - Indicadores de Salvamento em Componentes
+- [ ] Adicionar indicador em AdminBanners
+- [ ] Adicionar indicador em AdminServices
+- [ ] Adicionar indicador em AdminVideos
+- [ ] Adicionar indicador em AdminCategories
+- [ ] Adicionar indicador em AdminTags
+
+## Fase 4 - Filtro por Responsavel na Busca Publica
+- [ ] Adicionar dropdown de responsáveis em SearchPage
+- [ ] Integrar filtro com query de busca
+- [ ] Testar filtro com diferentes responsáveis
+
+## Fase 5 - Upload de Logo e Favicon
+- [ ] Adicionar campos de upload em AdminSettings
+- [ ] Implementar validação de tipo de arquivo
+- [ ] Integrar upload para S3
+- [ ] Exibir logo dinamicamente no header
+- [ ] Exibir favicon na página
+
+## Fase 6 - Painel de Analise de Rascunhos
 - [ ] Criar página AdminDrafts.tsx
 - [ ] Adicionar query para listar todos os rascunhos
 - [ ] Implementar filtros por autor, categoria e data
 - [ ] Adicionar estatísticas de rascunhos
 - [ ] Implementar ações em lote (publicar, deletar, arquivar)
 
-
-## Proximos Passos
-- [ ] Completar painel de análise de rascunhos (AdminDrafts.tsx)
-- [ ] Implementar notificações de conflito de edição
-- [ ] Adicionar testes unitários para salvamento automático
+## Fase 7 - Notificacoes de Conflito de Edicao
+- [ ] Adicionar tabela de active_editors no banco de dados
+- [ ] Criar procedimento para registrar editor ativo
+- [ ] Criar procedimento para verificar conflito de edição
+- [ ] Implementar notificação visual de conflito
+- [ ] Implementar lógica de lock/unlock de edição
