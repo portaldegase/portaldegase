@@ -1,9 +1,10 @@
-import { trpc } from "@/lib/trpc";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Plus, Edit, Trash2 } from "lucide-react";
+import { Plus, Edit, Trash2, Clock } from "lucide-react";
 import { toast } from "sonner";
 import RichTextEditor from "@/components/RichTextEditor";
+import { useAutosave } from "@/hooks/useAutosave";
+import { trpc } from "@/lib/trpc";
 
 function slugify(text: string): string {
   return text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
@@ -38,6 +39,32 @@ export default function AdminPages() {
     onError: (e) => toast.error(`Erro: ${e.message}`),
   });
 
+  const saveDraftMutation = trpc.pages.saveDraftPage.useMutation();
+  const getPageHistoryQuery = editingId ? trpc.pages.getPageHistory.useQuery({ pageId: editingId }) : null;
+  const [showVersionHistory, setShowVersionHistory] = useState(false);
+  const [lastSavedTime, setLastSavedTime] = useState<Date | null>(null);
+
+  const { isSaving, lastSaved, saveNow } = useAutosave(
+    { title, content, excerpt, menuLabel, showInMenu },
+    {
+      key: `page_draft_${editingId || 'new'}`,
+      debounceMs: 3000,
+      onSave: async (data: any) => {
+        if (!title.trim() || !content.trim()) return;
+        await saveDraftMutation.mutateAsync({
+          id: editingId || undefined,
+          title,
+          content,
+          excerpt,
+          menuLabel,
+          showInMenu,
+          slug: editingId ? undefined : slugify(title),
+        });
+        setLastSavedTime(new Date());
+      },
+    }
+  );
+
   function resetForm() {
     setShowEditor(false); setEditingId(null); setTitle(""); setSlug(""); setContent(""); setExcerpt(""); setStatus("draft"); setShowInMenu(false); setMenuLabel("");
   }
@@ -58,8 +85,31 @@ export default function AdminPages() {
     return (
       <div>
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold" style={{ color: "var(--degase-blue-dark)" }}>{editingId ? "Editar Página" : "Nova Página"}</h1>
-          <Button variant="outline" onClick={resetForm}>Cancelar</Button>
+          <div>
+            <h1 className="text-2xl font-bold" style={{ color: "var(--degase-blue-dark)" }}>{editingId ? "Editar Página" : "Nova Página"}</h1>
+            <div className="flex items-center gap-2 mt-2 text-sm text-gray-500">
+              <Clock size={14} />
+              {isSaving ? (
+                <span>Salvando rascunho...</span>
+              ) : lastSavedTime ? (
+                <span>Último salvamento: {lastSavedTime.toLocaleTimeString('pt-BR')}</span>
+              ) : (
+                <span>Rascunho será salvo automaticamente</span>
+              )}
+            </div>
+          </div>
+          <div className="flex gap-2">
+            {editingId && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowVersionHistory(!showVersionHistory)}
+              >
+                Histórico de Versões
+              </Button>
+            )}
+            <Button variant="outline" onClick={resetForm}>Cancelar</Button>
+          </div>
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -104,6 +154,30 @@ export default function AdminPages() {
             <Button type="button" variant="outline" onClick={resetForm}>Cancelar</Button>
           </div>
         </form>
+
+        {showVersionHistory && getPageHistoryQuery && getPageHistoryQuery.data && (
+          <div className="mt-8 p-4 bg-gray-50 rounded-lg border">
+            <h2 className="text-lg font-bold mb-4">Historico de Versoes</h2>
+            <div className="space-y-3 max-h-96 overflow-y-auto">
+              {getPageHistoryQuery.data.length > 0 ? (
+                getPageHistoryQuery.data.map((version: any) => (
+                  <div key={version.id} className="p-3 bg-white rounded border text-sm">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-medium">{version.changeDescription}</p>
+                        <p className="text-xs text-gray-500">
+                          {new Date(version.createdAt).toLocaleString('pt-BR')}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className="text-gray-500 text-sm">Nenhuma versao anterior</p>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     );
   }

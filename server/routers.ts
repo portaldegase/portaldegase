@@ -392,6 +392,72 @@ export const appRouter = router({
       return updated;
     }),
     delete: adminProcedure.input(z.object({ id: z.number() })).mutation(async ({ input }) => db.deletePage(input.id)),
+    saveDraftPage: adminProcedure.input(z.object({
+      id: z.number().optional(),
+      title: z.string().min(1),
+      content: z.string().min(1),
+      excerpt: z.string().optional(),
+      featuredImage: z.string().optional(),
+      menuLabel: z.string().optional(),
+      showInMenu: z.boolean().optional(),
+      slug: z.string().optional(),
+    })).mutation(async ({ input, ctx }) => {
+      if (input.id) {
+        const page = await db.getPageById(input.id);
+        if (!page) throw new TRPCError({ code: 'NOT_FOUND', message: 'Pagina nao encontrada' });
+        const updated = await db.updatePage(input.id, {
+          title: input.title,
+          content: input.content,
+          excerpt: input.excerpt,
+          featuredImage: input.featuredImage,
+          menuLabel: input.menuLabel,
+          showInMenu: input.showInMenu,
+          status: 'draft',
+        });
+        if (!updated) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Falha ao atualizar pagina' });
+        await db.createPageHistory(input.id, {
+          title: updated.title,
+          content: updated.content,
+          excerpt: updated.excerpt,
+          featuredImage: updated.featuredImage,
+          status: 'draft',
+          menuLabel: updated.menuLabel,
+          showInMenu: updated.showInMenu,
+          editorId: ctx.user.id,
+          changeDescription: 'Rascunho salvo automaticamente',
+        });
+        return updated;
+      } else {
+        const slug = input.slug || slugify(input.title);
+        const page = await db.createPage({
+          title: input.title,
+          slug,
+          content: input.content,
+          excerpt: input.excerpt,
+          featuredImage: input.featuredImage,
+          menuLabel: input.menuLabel,
+          showInMenu: input.showInMenu,
+          status: 'draft',
+        });
+        await db.createPageHistory(page.id, {
+          title: page.title,
+          content: page.content,
+          excerpt: page.excerpt,
+          featuredImage: page.featuredImage,
+          status: 'draft',
+          menuLabel: page.menuLabel,
+          showInMenu: page.showInMenu,
+          editorId: ctx.user.id,
+          changeDescription: 'Rascunho criado automaticamente',
+        });
+        return page;
+      }
+    }),
+    getPageHistory: adminProcedure.input(z.object({ pageId: z.number() })).query(async ({ input }) => {
+      const page = await db.getPageById(input.pageId);
+      if (!page) throw new TRPCError({ code: 'NOT_FOUND', message: 'Pagina nao encontrada' });
+      return db.getPageHistory(input.pageId);
+    }),
   }),
 
   banners: router({

@@ -291,3 +291,30 @@
 - [x] Integrar useAutosave em AdminPosts.tsx
 - [x] Adicionar indicador de salvamento automático no cabeçalho
 - [x] Adicionar seção de histórico de versões
+
+## Salvamento Automatico em AdminPages
+- [ ] Adicionar procedimento saveDraftPage em routers.ts
+- [ ] Adicionar procedimento getPageHistory em routers.ts
+- [ ] Integrar useAutosave em AdminPages.tsx
+- [ ] Adicionar indicador de salvamento automático em AdminPages
+- [ ] Adicionar seção de histórico de versões em AdminPages
+
+## Notificacoes de Conflito de Edicao
+- [ ] Adicionar tabela de active_editors no banco de dados
+- [ ] Criar procedimento para registrar editor ativo
+- [ ] Criar procedimento para verificar conflito de edição
+- [ ] Implementar notificação visual de conflito
+- [ ] Implementar lógica de lock/unlock de edição
+
+## Painel de Analise de Rascunhos
+- [ ] Criar página AdminDrafts.tsx
+- [ ] Adicionar query para listar todos os rascunhos
+- [ ] Implementar filtros por autor, categoria e data
+- [ ] Adicionar estatísticas de rascunhos
+- [ ] Implementar ações em lote (publicar, deletar, arquivar)
+
+
+## Proximos Passos
+- [ ] Completar painel de análise de rascunhos (AdminDrafts.tsx)
+- [ ] Implementar notificações de conflito de edição
+- [ ] Adicionar testes unitários para salvamento automático

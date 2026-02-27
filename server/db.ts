@@ -251,6 +251,7 @@ export async function updatePage(id: number, data: Partial<InsertPage>) {
   const db = await getDb();
   if (!db) throw new Error("DB not available");
   await db.update(pages).set(data).where(eq(pages.id, id));
+  return getPageById(id);
 }
 
 export async function deletePage(id: number) {
