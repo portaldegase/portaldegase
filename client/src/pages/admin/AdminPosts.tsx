@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
 import RichTextEditor from "@/components/RichTextEditor";
 import ImageUploadButton from "@/components/ImageUploadButton";
+import imageCompression from 'browser-image-compression';
 
 function slugify(text: string): string {
   return text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
@@ -20,6 +21,8 @@ export default function AdminPosts() {
   const [content, setContent] = useState("");
   const [excerpt, setExcerpt] = useState("");
   const [featuredImage, setFeaturedImage] = useState("");
+  const [featuredImagePreview, setFeaturedImagePreview] = useState<string | null>(null);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [categoryId, setCategoryId] = useState<number | undefined>();
   const [authorId, setAuthorId] = useState<number | undefined>();
   const [status, setStatus] = useState<"draft" | "published" | "archived">("draft");
@@ -48,6 +51,46 @@ export default function AdminPosts() {
     onError: (e) => toast.error(`Erro: ${e.message}`),
   });
 
+  const uploadMutation = trpc.upload.image.useMutation();
+
+  async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("Arquivo muito grande. Maximo 10MB.");
+      return;
+    }
+
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+      toast.error("Formato invalido. Use JPG, PNG ou WebP.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => setFeaturedImagePreview(e.target?.result as string);
+    reader.readAsDataURL(file);
+    
+    setIsUploadingImage(true);
+
+    try {
+      const options = { maxSizeMB: 1, maxWidthOrHeight: 1920, useWebWorker: true };
+      const compressedFile = await imageCompression(file, options);
+      const buffer = await compressedFile.arrayBuffer();
+      const result = await uploadMutation.mutateAsync({
+        file: new Uint8Array(buffer),
+        filename: compressedFile.name,
+        mimetype: compressedFile.type,
+      });
+      setFeaturedImage(result.url);
+      toast.success("Imagem enviada com sucesso!");
+    } catch (error) {
+      toast.error("Erro ao fazer upload da imagem.");
+    } finally {
+      setIsUploadingImage(false);
+    }
+  }
+
   function resetForm() {
     setShowEditor(false);
     setEditingId(null);
@@ -55,6 +98,7 @@ export default function AdminPosts() {
     setContent("");
     setExcerpt("");
     setFeaturedImage("");
+    setFeaturedImagePreview(null);
     setCategoryId(undefined);
     setAuthorId(undefined);
     setStatus("draft");
@@ -164,15 +208,26 @@ export default function AdminPosts() {
               </select>
             </div>
           </div>
-
           <div>
-            <label className="block text-sm font-medium mb-1">Imagem Destacada</label>
-            <ImageUploadButton onImageUpload={setFeaturedImage} />
-            {featuredImage && (
-              <div className="mt-2">
-                <img src={featuredImage} alt="Preview" className="max-w-xs h-auto rounded-md border" />
+            <label className="block text-sm font-medium mb-1">Imagem Destacada (Maximo 10MB)</label>
+            <div className="flex gap-2">
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                onChange={handleImageUpload}
+                disabled={isUploadingImage}
+                className="flex-1 px-3 py-2 border rounded-md"
+              />
+              {isUploadingImage && <span className="text-sm text-gray-500">Enviando...</span>}
+            </div>
+            {featuredImagePreview && (
+              <div className="mt-3">
+                <p className="text-xs font-medium mb-2">Preview:</p>
+                <img src={featuredImagePreview} alt="Preview" className="w-full max-w-md h-auto rounded-md border" />
               </div>
             )}
+            {featuredImage && <p className="text-xs text-green-600 mt-1">Imagem enviada</p>}
+            <p className="text-xs text-gray-500 mt-1">Formatos: JPG, PNG, WebP | Sera comprimida automaticamente</p>
           </div>
 
           <div className="flex items-center gap-2">

@@ -269,15 +269,15 @@
 - [ ] Corrigir erros em AdminAnalytics.tsx
 
 ## Preview de Imagem
-- [ ] Implementar preview de imagem antes de upload em AdminBanners
-- [ ] Implementar preview em AdminServices
-- [ ] Implementar preview em AdminPosts
+- [x] Implementar preview de imagem antes de upload em AdminBanners
+- [x] Implementar preview em AdminServices
+- [x] Implementar preview em AdminPosts
 
-## Compressão de Imagens
-- [ ] Adicionar biblioteca de compressão
-- [ ] Implementar compressão antes de upload em AdminBanners
-- [ ] Implementar compressão em AdminServices
-- [ ] Implementar compressão em AdminPosts
+## Compressao de Imagens
+- [x] Adicionar biblioteca de compressao
+- [x] Implementar compressao antes de upload em AdminBanners
+- [x] Implementar compressao em AdminServices
+- [x] Implementar compressao em AdminPosts
 
 ## Alterações no Cabeçalho
 - [x] Remover 3 campos de texto entre logo DEGASE e busca
