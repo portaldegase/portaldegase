@@ -22,6 +22,9 @@ import {
   serviceClickLog, InsertServiceClickLog,
   documents, InsertDocument,
   documentCategories, InsertDocumentCategory,
+  documentVersions, InsertDocumentVersion,
+  documentDownloads, InsertDocumentDownload,
+  documentDownloadStats, InsertDocumentDownloadStats,
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -1058,4 +1061,114 @@ export async function getDocumentsWithCategories() {
     .innerJoin(documentCategories, eq(documents.categoryId, documentCategories.id))
     .where(and(eq(documents.isActive, true), eq(documentCategories.isActive, true)))
     .orderBy(asc(documentCategories.sortOrder), desc(documents.createdAt));
+}
+
+
+// ==================== DOCUMENT VERSIONS ====================
+export async function createDocumentVersion(data: InsertDocumentVersion) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.insert(documentVersions).values(data);
+  const id = result[0].insertId;
+  return db.select().from(documentVersions).where(eq(documentVersions.id, Number(id))).limit(1).then(r => r[0]);
+}
+
+export async function getDocumentVersions(documentId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(documentVersions).where(eq(documentVersions.documentId, documentId)).orderBy(desc(documentVersions.versionNumber));
+}
+
+export async function getLatestDocumentVersion(documentId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.select().from(documentVersions)
+    .where(eq(documentVersions.documentId, documentId))
+    .orderBy(desc(documentVersions.versionNumber))
+    .limit(1);
+  return result.length > 0 ? result[0] : null;
+}
+
+export async function getNextVersionNumber(documentId: number) {
+  const db = await getDb();
+  if (!db) return 1;
+  const result = await db.select({ maxVersion: sql<number>`MAX(${documentVersions.versionNumber})` })
+    .from(documentVersions)
+    .where(eq(documentVersions.documentId, documentId));
+  const maxVersion = result[0]?.maxVersion || 0;
+  return maxVersion + 1;
+}
+
+// ==================== DOCUMENT DOWNLOADS ====================
+export async function recordDocumentDownload(data: InsertDocumentDownload) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.insert(documentDownloads).values(data);
+  
+  // Atualizar estatísticas
+  const stats = await db.select().from(documentDownloadStats)
+    .where(eq(documentDownloadStats.documentId, data.documentId))
+    .limit(1);
+  
+  if (stats.length > 0) {
+    await db.update(documentDownloadStats)
+      .set({ totalDownloads: sql`totalDownloads + 1`, lastDownloadedAt: new Date() })
+      .where(eq(documentDownloadStats.documentId, data.documentId));
+  } else {
+    await db.insert(documentDownloadStats).values({
+      documentId: data.documentId,
+      totalDownloads: 1,
+      lastDownloadedAt: new Date(),
+    });
+  }
+}
+
+export async function getDocumentDownloadStats(documentId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.select().from(documentDownloadStats)
+    .where(eq(documentDownloadStats.documentId, documentId))
+    .limit(1);
+  return result.length > 0 ? result[0] : null;
+}
+
+export async function getAllDocumentDownloadStats() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(documentDownloadStats).orderBy(desc(documentDownloadStats.totalDownloads));
+}
+
+export async function getDocumentDownloadsCount(documentId: number, days?: number) {
+  const db = await getDb();
+  if (!db) return 0;
+  
+  let whereConditions: any[] = [eq(documentDownloads.documentId, documentId)];
+  
+  if (days) {
+    const daysAgo = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+    whereConditions.push(gte(documentDownloads.downloadedAt, daysAgo));
+  }
+  
+  const result = await db.select({ count: sql<number>`COUNT(*)` })
+    .from(documentDownloads)
+    .where(and(...whereConditions));
+  
+  return result[0]?.count || 0;
+}
+
+export async function searchDocuments(query: string) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const searchPattern = `%${query}%`;
+  return db.select().from(documents)
+    .where(and(
+      or(
+        ilike(documents.name, searchPattern),
+        ilike(documents.description, searchPattern)
+      ),
+      eq(documents.isActive, true)
+    ))
+    .orderBy(desc(documents.createdAt));
 }

@@ -355,3 +355,15 @@
 - [ ] Adicionar entrada no menu administrativo
 - [ ] Adicionar entrada no menu público
 - [ ] Integrar atualização automática de listagem ao enviar documento
+
+
+## Melhorias de Documentos - Fase 2
+- [ ] Adicionar busca de documentos na página pública
+- [ ] Implementar filtro por categoria na busca
+- [ ] Criar painel de estatísticas de downloads
+- [ ] Rastrear downloads de documentos
+- [ ] Exibir estatísticas por documento
+- [ ] Implementar versionamento de documentos
+- [ ] Permitir upload de novas versões
+- [ ] Manter histórico de versões
+- [ ] Exibir versões disponíveis para download

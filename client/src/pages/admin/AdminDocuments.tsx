@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Plus, Edit, Trash2, Download, FileText } from "lucide-react";
+import { Plus, Edit, Trash2, Download, FileText, BarChart3 } from "lucide-react";
 import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
+import { Link } from "wouter";
 
 export default function AdminDocuments() {
   const [showForm, setShowForm] = useState(false);
@@ -148,6 +149,11 @@ export default function AdminDocuments() {
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold" style={{ color: "var(--degase-blue-dark)" }}>Documentos</h1>
         <div className="flex gap-2">
+          <Link href="/admin/documentos/estatisticas">
+            <Button variant="outline" style={{ borderColor: "var(--degase-blue-dark)", color: "var(--degase-blue-dark)" }}>
+              <BarChart3 size={16} className="mr-1" /> Estatísticas
+            </Button>
+          </Link>
           <Button onClick={() => setShowCategoryForm(true)} variant="outline" style={{ borderColor: "var(--degase-blue-dark)", color: "var(--degase-blue-dark)" }}>
             <Plus size={16} className="mr-1" /> Nova Categoria
           </Button>

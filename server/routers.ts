@@ -883,6 +883,50 @@ export const appRouter = router({
       await db.deleteDocument(input.id);
       return { success: true };
     }),
+    search: publicProcedure.input(z.object({ query: z.string().min(1) })).query(async ({ input }) => db.searchDocuments(input.query)),
+    recordDownload: publicProcedure.input(z.object({
+      documentId: z.number(),
+      versionId: z.number().optional(),
+    })).mutation(async ({ input, ctx }) => {
+      const userAgent = ctx.req.headers["user-agent"];
+      const ipAddress = ctx.req.ip || ctx.req.socket.remoteAddress;
+      await db.recordDocumentDownload({
+        documentId: input.documentId,
+        versionId: input.versionId,
+        userAgent: userAgent as string | undefined,
+        ipAddress: ipAddress as string | undefined,
+      });
+      return { success: true };
+    }),
+    getDownloadStats: adminProcedure.query(async () => db.getAllDocumentDownloadStats()),
+    getDocumentStats: adminProcedure.input(z.object({ documentId: z.number() })).query(async ({ input }) => db.getDocumentDownloadStats(input.documentId)),
+  }),
+
+  documentVersions: router({
+    list: publicProcedure.input(z.object({ documentId: z.number() })).query(async ({ input }) => db.getDocumentVersions(input.documentId)),
+    create: protectedProcedure.input(z.object({
+      documentId: z.number(),
+      fileUrl: z.string().min(1),
+      fileKey: z.string().min(1),
+      fileSize: z.number().min(1),
+      mimeType: z.string().min(1),
+      changeDescription: z.string().optional(),
+    })).mutation(async ({ input, ctx }) => {
+      if (ctx.user.role !== 'admin' && ctx.user.role !== 'contributor') {
+        throw new TRPCError({ code: 'FORBIDDEN', message: 'Acesso restrito' });
+      }
+      const versionNumber = await db.getNextVersionNumber(input.documentId);
+      return db.createDocumentVersion({
+        documentId: input.documentId,
+        versionNumber,
+        fileUrl: input.fileUrl,
+        fileKey: input.fileKey,
+        fileSize: input.fileSize,
+        mimeType: input.mimeType,
+        uploadedBy: ctx.user.id,
+        changeDescription: input.changeDescription,
+      });
+    }),
   }),
 });
 

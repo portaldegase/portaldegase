@@ -442,3 +442,53 @@ export const documents = mysqlTable("documents", {
 
 export type Document = typeof documents.$inferSelect;
 export type InsertDocument = typeof documents.$inferInsert;
+
+
+/**
+ * Document Versions - histórico de versões de documentos
+ */
+export const documentVersions = mysqlTable("document_versions", {
+  id: int("id").autoincrement().primaryKey(),
+  documentId: int("documentId").notNull().references(() => documents.id, { onDelete: "cascade" }),
+  versionNumber: int("versionNumber").notNull(),
+  fileUrl: varchar("fileUrl", { length: 1024 }).notNull(),
+  fileKey: varchar("fileKey", { length: 1024 }).notNull(),
+  fileSize: int("fileSize").notNull(),
+  mimeType: varchar("mimeType", { length: 100 }).notNull(),
+  uploadedBy: int("uploadedBy").notNull().references(() => users.id, { onDelete: "restrict" }),
+  changeDescription: text("changeDescription"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type DocumentVersion = typeof documentVersions.$inferSelect;
+export type InsertDocumentVersion = typeof documentVersions.$inferInsert;
+
+/**
+ * Document Downloads - rastreamento de downloads
+ */
+export const documentDownloads = mysqlTable("document_downloads", {
+  id: int("id").autoincrement().primaryKey(),
+  documentId: int("documentId").notNull().references(() => documents.id, { onDelete: "cascade" }),
+  versionId: int("versionId").references(() => documentVersions.id, { onDelete: "cascade" }),
+  userAgent: varchar("userAgent", { length: 500 }),
+  ipAddress: varchar("ipAddress", { length: 45 }),
+  downloadedAt: timestamp("downloadedAt").defaultNow().notNull(),
+});
+
+export type DocumentDownload = typeof documentDownloads.$inferSelect;
+export type InsertDocumentDownload = typeof documentDownloads.$inferInsert;
+
+/**
+ * Document Download Statistics - agregação de estatísticas
+ */
+export const documentDownloadStats = mysqlTable("document_download_stats", {
+  id: int("id").autoincrement().primaryKey(),
+  documentId: int("documentId").notNull().references(() => documents.id, { onDelete: "cascade" }),
+  totalDownloads: int("totalDownloads").default(0).notNull(),
+  lastDownloadedAt: timestamp("lastDownloadedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type DocumentDownloadStats = typeof documentDownloadStats.$inferSelect;
+export type InsertDocumentDownloadStats = typeof documentDownloadStats.$inferInsert;

@@ -37,6 +37,7 @@ import AdminTransparency from "./pages/admin/AdminTransparency";
 import AdminSettings from "./pages/admin/AdminSettings";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminDocuments from "./pages/admin/AdminDocuments";
+import AdminDocumentStats from "./pages/admin/AdminDocumentStats";
 
 // Layout components
 import SiteHeader from "./components/SiteHeader";
@@ -103,6 +104,7 @@ function Router() {
       <Route path="/admin/usuarios">{() => <AdminPage component={AdminUsers} />}</Route>
       <Route path="/admin/configuracoes">{() => <AdminPage component={AdminSettings} />}</Route>
       <Route path="/admin/documentos">{() => <AdminPage component={AdminDocuments} />}</Route>
+      <Route path="/admin/documentos/estatisticas">{() => <AdminPage component={AdminDocumentStats} />}</Route>
 
       {/* 404 */}
       <Route path="/404" component={NotFound} />
