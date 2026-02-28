@@ -403,3 +403,17 @@
 - [x] Corrigir exibicao de categoria em documentos em destaque (mostrando "Sem Categoria")
 - [x] Corrigir erro ao clicar em "Exibir mais documentos" na pagina publica
 - [x] Corrigir erro ao acessar pagina de documentos no admin
+
+
+## Blocos Personalizaveis em Paginas
+- [ ] Criar schema para blocos de pagina com tipos (servicos, documentos, imagens)
+- [ ] Implementar routers tRPC para CRUD de blocos
+- [ ] Criar interface de edicao de blocos em AdminPages
+- [ ] Implementar renderizacao de blocos na pagina publica
+
+
+## Blocos Personalizaveis em Paginas
+- [x] Criar schema para blocos de página com suporte a diferentes tipos de conteúdo
+- [x] Implementar routers tRPC para CRUD de blocos
+- [x] Criar interface de edição de blocos em AdminPages
+- [x] Implementar renderização de blocos na página pública

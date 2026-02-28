@@ -25,6 +25,9 @@ import {
   documentVersions, InsertDocumentVersion,
   documentDownloads, InsertDocumentDownload,
   documentDownloadStats, InsertDocumentDownloadStats,
+  pageBlocks, InsertPageBlock,
+  pageBlockItems, InsertPageBlockItem,
+  imagesBank, InsertImagesBank,
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -1321,4 +1324,108 @@ export async function getFeaturedDocumentsOrdered(limit = 5) {
     .where(and(eq(documents.isFeatured, true), eq(documents.isActive, true)))
     .orderBy(asc(documents.sortOrder))
     .limit(limit);
+}
+
+
+// ==================== PAGE BLOCKS ====================
+export async function createPageBlock(data: InsertPageBlock) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.insert(pageBlocks).values(data);
+  const id = result[0].insertId;
+  return db.select().from(pageBlocks).where(eq(pageBlocks.id, Number(id))).limit(1).then(r => r[0]);
+}
+
+export async function getPageBlocks(pageId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(pageBlocks)
+    .where(eq(pageBlocks.pageId, pageId))
+    .orderBy(asc(pageBlocks.sortOrder));
+}
+
+export async function updatePageBlock(id: number, data: Partial<InsertPageBlock>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(pageBlocks).set(data).where(eq(pageBlocks.id, id));
+  return db.select().from(pageBlocks).where(eq(pageBlocks.id, id)).limit(1).then(r => r[0]);
+}
+
+export async function deletePageBlock(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  return db.delete(pageBlocks).where(eq(pageBlocks.id, id));
+}
+
+export async function reorderPageBlocks(pageId: number, blockIds: number[]) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  for (let i = 0; i < blockIds.length; i++) {
+    await db.update(pageBlocks).set({ sortOrder: i }).where(eq(pageBlocks.id, blockIds[i]));
+  }
+  return getPageBlocks(pageId);
+}
+
+// ==================== PAGE BLOCK ITEMS ====================
+export async function createPageBlockItem(data: InsertPageBlockItem) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.insert(pageBlockItems).values(data);
+  const id = result[0].insertId;
+  return db.select().from(pageBlockItems).where(eq(pageBlockItems.id, Number(id))).limit(1).then(r => r[0]);
+}
+
+export async function getPageBlockItems(blockId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(pageBlockItems)
+    .where(eq(pageBlockItems.blockId, blockId))
+    .orderBy(asc(pageBlockItems.sortOrder));
+}
+
+export async function deletePageBlockItem(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  return db.delete(pageBlockItems).where(eq(pageBlockItems.id, id));
+}
+
+export async function reorderPageBlockItems(blockId: number, itemIds: number[]) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  for (let i = 0; i < itemIds.length; i++) {
+    await db.update(pageBlockItems).set({ sortOrder: i }).where(eq(pageBlockItems.id, itemIds[i]));
+  }
+  return getPageBlockItems(blockId);
+}
+
+// ==================== IMAGES BANK ====================
+export async function createImageInBank(data: InsertImagesBank) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.insert(imagesBank).values(data);
+  const id = result[0].insertId;
+  return db.select().from(imagesBank).where(eq(imagesBank.id, Number(id))).limit(1).then(r => r[0]);
+}
+
+export async function getImagesBank(limit = 100, offset = 0) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(imagesBank)
+    .orderBy(desc(imagesBank.createdAt))
+    .limit(limit)
+    .offset(offset);
+}
+
+export async function getImagesBySourceType(sourceType: string) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(imagesBank)
+    .where(eq(imagesBank.sourceType, sourceType as any))
+    .orderBy(desc(imagesBank.createdAt));
+}
+
+export async function deleteImageFromBank(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  return db.delete(imagesBank).where(eq(imagesBank.id, id));
 }

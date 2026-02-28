@@ -21,6 +21,7 @@ import InstitutionalPage from "./pages/InstitutionalPage";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 import Documents from "./pages/Documents";
+import Page from "./pages/Page";
 
 // Admin pages
 import AdminLayout from "./pages/admin/AdminLayout";
@@ -87,7 +88,7 @@ function Router() {
       <Route path="/busca">{() => <PublicPage component={SearchResults} />}</Route>
       <Route path="/privacidade">{() => <PublicPage component={Privacy} />}</Route>
       <Route path="/termos">{() => <PublicPage component={Terms} />}</Route>
-      <Route path="/pagina/:slug">{() => <PublicPage component={InstitutionalPage} />}</Route>
+      <Route path="/pagina/:slug">{() => <PublicPage component={Page} />}</Route>
       <Route path="/documentos">{() => <PublicPage component={Documents} />}</Route>
 
       {/* Admin routes */}

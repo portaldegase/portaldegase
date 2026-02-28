@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import RichTextEditor from "@/components/RichTextEditor";
 import { useAutosave } from "@/hooks/useAutosave";
 import { trpc } from "@/lib/trpc";
+import { PageBlocksEditor } from "@/components/PageBlocksEditor";
 
 function slugify(text: string): string {
   return text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
@@ -154,6 +155,12 @@ export default function AdminPages() {
             <Button type="button" variant="outline" onClick={resetForm}>Cancelar</Button>
           </div>
         </form>
+        {editingId && (
+          <div className="mt-8 pt-8 border-t">
+            <h2 className="text-lg font-bold mb-4">Blocos Personalizados</h2>
+            <PageBlocksEditor pageId={editingId} />
+          </div>
+        )}
 
         {showVersionHistory && getPageHistoryQuery && getPageHistoryQuery.data && (
           <div className="mt-8 p-4 bg-gray-50 rounded-lg border">

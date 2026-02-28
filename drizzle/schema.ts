@@ -494,3 +494,62 @@ export const documentDownloadStats = mysqlTable("document_download_stats", {
 
 export type DocumentDownloadStats = typeof documentDownloadStats.$inferSelect;
 export type InsertDocumentDownloadStats = typeof documentDownloadStats.$inferInsert;
+
+
+/**
+ * Page Blocks - blocos personalizáveis para páginas
+ */
+export const pageBlocks = mysqlTable("page_blocks", {
+  id: int("id").autoincrement().primaryKey(),
+  pageId: int("pageId").notNull().references(() => pages.id, { onDelete: "cascade" }),
+  blockType: mysqlEnum("blockType", ["services", "documentCategories", "images", "text", "html"]).notNull(),
+  title: varchar("title", { length: 255 }),
+  description: text("description"),
+  sortOrder: int("sortOrder").default(0).notNull(),
+  config: json("config"), // Configurações específicas do bloco (filtros, limites, etc)
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type PageBlock = typeof pageBlocks.$inferSelect;
+export type InsertPageBlock = typeof pageBlocks.$inferInsert;
+
+/**
+ * Page Block Items - itens específicos dentro de cada bloco
+ */
+export const pageBlockItems = mysqlTable("page_block_items", {
+  id: int("id").autoincrement().primaryKey(),
+  blockId: int("blockId").notNull().references(() => pageBlocks.id, { onDelete: "cascade" }),
+  itemType: mysqlEnum("itemType", ["service", "documentCategory", "image"]).notNull(),
+  itemId: int("itemId"), // ID do serviço, categoria de documento ou imagem
+  sortOrder: int("sortOrder").default(0).notNull(),
+  customData: json("customData"), // Dados customizados (título override, descrição, etc)
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type PageBlockItem = typeof pageBlockItems.$inferSelect;
+export type InsertPageBlockItem = typeof pageBlockItems.$inferInsert;
+
+/**
+ * Images Bank - banco de imagens do site (imagens de posts, etc)
+ */
+export const imagesBank = mysqlTable("images_bank", {
+  id: int("id").autoincrement().primaryKey(),
+  url: varchar("url", { length: 1024 }).notNull(),
+  fileKey: varchar("fileKey", { length: 1024 }).notNull(),
+  fileName: varchar("fileName", { length: 255 }).notNull(),
+  fileSize: int("fileSize").notNull(),
+  mimeType: varchar("mimeType", { length: 100 }).notNull(),
+  width: int("width"),
+  height: int("height"),
+  alt: varchar("alt", { length: 255 }),
+  title: varchar("title", { length: 255 }),
+  sourceType: mysqlEnum("sourceType", ["post", "service", "document", "banner", "manual"]).notNull(),
+  sourceId: int("sourceId"), // ID da fonte (post ID, service ID, etc)
+  uploadedBy: int("uploadedBy").notNull().references(() => users.id, { onDelete: "restrict" }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type ImagesBank = typeof imagesBank.$inferSelect;
+export type InsertImagesBank = typeof imagesBank.$inferInsert;

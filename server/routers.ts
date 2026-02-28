@@ -968,6 +968,76 @@ export const appRouter = router({
       });
     }),
   }),
+
+  pageBlocks: router({
+    list: publicProcedure.input(z.object({ pageId: z.number() })).query(async ({ input }) => db.getPageBlocks(input.pageId)),
+    create: protectedProcedure.input(z.object({
+      pageId: z.number(),
+      blockType: z.enum(["services", "documentCategories", "images", "text", "html"]),
+      title: z.string().optional(),
+      description: z.string().optional(),
+      config: z.any().optional(),
+    })).mutation(async ({ input, ctx }) => {
+      if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+      return db.createPageBlock({
+        pageId: input.pageId,
+        blockType: input.blockType,
+        title: input.title,
+        description: input.description,
+        config: input.config,
+        sortOrder: 0,
+      });
+    }),
+    update: protectedProcedure.input(z.object({
+      id: z.number(),
+      title: z.string().optional(),
+      description: z.string().optional(),
+      config: z.any().optional(),
+    })).mutation(async ({ input, ctx }) => {
+      if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+      return db.updatePageBlock(input.id, {
+        title: input.title,
+        description: input.description,
+        config: input.config,
+      });
+    }),
+    delete: protectedProcedure.input(z.object({ id: z.number() })).mutation(async ({ input, ctx }) => {
+      if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+      return db.deletePageBlock(input.id);
+    }),
+  }),
+
+  pageBlockItems: router({
+    list: publicProcedure.input(z.object({ blockId: z.number() })).query(async ({ input }) => db.getPageBlockItems(input.blockId)),
+    create: protectedProcedure.input(z.object({
+      blockId: z.number(),
+      itemType: z.enum(["service", "documentCategory", "image"]),
+      itemId: z.number().optional(),
+      customData: z.any().optional(),
+    })).mutation(async ({ input, ctx }) => {
+      if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+      return db.createPageBlockItem({
+        blockId: input.blockId,
+        itemType: input.itemType,
+        itemId: input.itemId,
+        customData: input.customData,
+        sortOrder: 0,
+      });
+    }),
+    delete: protectedProcedure.input(z.object({ id: z.number() })).mutation(async ({ input, ctx }) => {
+      if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+      return db.deletePageBlockItem(input.id);
+    }),
+  }),
+
+  imagesBank: router({
+    list: publicProcedure.input(z.object({ limit: z.number().default(100), offset: z.number().default(0) })).query(async ({ input }) => db.getImagesBank(input.limit, input.offset)),
+    getBySourceType: publicProcedure.input(z.object({ sourceType: z.string() })).query(async ({ input }) => db.getImagesBySourceType(input.sourceType)),
+    delete: protectedProcedure.input(z.object({ id: z.number() })).mutation(async ({ input, ctx }) => {
+      if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+      return db.deleteImageFromBank(input.id);
+    }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;
