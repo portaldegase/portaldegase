@@ -56,6 +56,12 @@ export default function FeaturedDocuments() {
               className="bg-white rounded-lg border hover:shadow-lg transition-shadow overflow-hidden flex flex-col"
             >
               <div className="p-6 flex-1 flex flex-col">
+                <div className="mb-3">
+                  <span className="inline-block px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
+                    {doc.category?.name || "Sem Categoria"}
+                  </span>
+                </div>
+
                 <div className="flex items-start gap-3 mb-4">
                   <div className="p-2 bg-blue-100 rounded-lg flex-shrink-0">
                     <FileText size={24} className="text-blue-600" />
