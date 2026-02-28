@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Download, FileText, ChevronDown, ChevronUp, Search, History } from "lucide-react";
+import { Download, FileText, ChevronDown, ChevronUp, Search, History, Filter, X } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { Input } from "@/components/ui/input";
 
@@ -7,11 +7,27 @@ export default function Documents() {
   const [expandedCategories, setExpandedCategories] = useState<Set<number>>(new Set());
   const [searchQuery, setSearchQuery] = useState("");
   const [expandedVersions, setExpandedVersions] = useState<Set<number>>(new Set());
+  const [selectedCategory, setSelectedCategory] = useState<number | undefined>();
+  const [minSize, setMinSize] = useState<number | undefined>();
+  const [maxSize, setMaxSize] = useState<number | undefined>();
+  const [showFilters, setShowFilters] = useState(false);
+
   const { data: documents, isLoading } = trpc.documents.list.useQuery();
+  const { data: categories } = trpc.documentCategories.list.useQuery();
   const { data: searchResults, isLoading: searchLoading } = trpc.documents.search.useQuery(
     { query: searchQuery },
     { enabled: searchQuery.length > 0 }
   );
+  const { data: advancedResults, isLoading: advancedLoading } = trpc.documents.searchAdvanced.useQuery(
+    {
+      query: searchQuery || undefined,
+      categoryId: selectedCategory,
+      minSize,
+      maxSize,
+    },
+    { enabled: selectedCategory !== undefined || minSize !== undefined || maxSize !== undefined }
+  );
+
   const recordDownload = trpc.documents.recordDownload.useMutation();
 
   const toggleCategory = (categoryId: number) => {
@@ -46,20 +62,21 @@ export default function Documents() {
     return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + sizes[i];
   }
 
-  const documentsByCategory = documents?.reduce((acc, item: any) => {
-    const categoryId = item.document_categories.id;
+  const hasAdvancedFilters = selectedCategory !== undefined || minSize !== undefined || maxSize !== undefined;
+  const displayDocuments = hasAdvancedFilters ? advancedResults : (searchQuery.length > 0 ? searchResults : documents);
+  const isDisplayLoading = hasAdvancedFilters ? advancedLoading : (searchQuery.length > 0 ? searchLoading : isLoading);
+
+  const documentsByCategory = displayDocuments?.reduce((acc, item: any) => {
+    const categoryId = item.categoryId;
     if (!acc[categoryId]) {
       acc[categoryId] = {
-        category: item.document_categories,
+        category: item.category,
         documents: [],
       };
     }
-    acc[categoryId].documents.push(item.documents);
+    acc[categoryId].documents.push(item);
     return acc;
   }, {} as Record<number, any>) || {};
-
-  const displayDocuments = searchQuery.length > 0 ? searchResults : documents;
-  const isDisplayLoading = searchQuery.length > 0 ? searchLoading : isLoading;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -71,36 +88,137 @@ export default function Documents() {
           Acesse todos os documentos e recursos disponibilizados pelo DEGASE
         </p>
 
-        <div className="mb-8 relative">
-          <Search className="absolute left-3 top-3 text-gray-400" size={20} />
-          <Input
-            type="text"
-            placeholder="Buscar documentos por nome ou descrição..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 py-2"
-          />
+        {/* Barra de Busca e Filtros */}
+        <div className="bg-white rounded-lg border p-4 mb-6">
+          <div className="flex gap-2 mb-4">
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-3 text-gray-400" size={20} />
+              <Input
+                type="text"
+                placeholder="Buscar documentos por nome ou descrição..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 py-2"
+              />
+            </div>
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className="px-4 py-2 rounded-lg border hover:bg-gray-50 transition-colors flex items-center gap-2"
+            >
+              <Filter size={20} />
+              Filtros
+            </button>
+          </div>
+
+          {/* Filtros Avançados */}
+          {showFilters && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t">
+              <div>
+                <label className="block text-sm font-medium mb-2">Categoria</label>
+                <select
+                  value={selectedCategory || ""}
+                  onChange={(e) => setSelectedCategory(e.target.value ? parseInt(e.target.value) : undefined)}
+                  className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2"
+                  style={{ "--tw-ring-color": "var(--degase-blue-dark)" } as any}
+                >
+                  <option value="">Todas as categorias</option>
+                  {categories?.map((cat: any) => (
+                    <option key={cat.id} value={cat.id}>
+                      {cat.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">Tamanho Mínimo</label>
+                <select
+                  value={minSize || ""}
+                  onChange={(e) => setMinSize(e.target.value ? parseInt(e.target.value) : undefined)}
+                  className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2"
+                  style={{ "--tw-ring-color": "var(--degase-blue-dark)" } as any}
+                >
+                  <option value="">Qualquer tamanho</option>
+                  <option value="1048576">Acima de 1 MB</option>
+                  <option value="5242880">Acima de 5 MB</option>
+                  <option value="10485760">Acima de 10 MB</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">Tamanho Máximo</label>
+                <select
+                  value={maxSize || ""}
+                  onChange={(e) => setMaxSize(e.target.value ? parseInt(e.target.value) : undefined)}
+                  className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2"
+                  style={{ "--tw-ring-color": "var(--degase-blue-dark)" } as any}
+                >
+                  <option value="">Qualquer tamanho</option>
+                  <option value="1048576">Até 1 MB</option>
+                  <option value="5242880">Até 5 MB</option>
+                  <option value="10485760">Até 10 MB</option>
+                  <option value="41943040">Até 40 MB</option>
+                </select>
+              </div>
+            </div>
+          )}
+
+          {/* Tags de Filtros Ativos */}
+          {(searchQuery || selectedCategory || minSize || maxSize) && (
+            <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t">
+              {searchQuery && (
+                <span className="inline-flex items-center gap-2 px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">
+                  Busca: {searchQuery}
+                  <button onClick={() => setSearchQuery("")} className="hover:text-blue-900">
+                    <X size={14} />
+                  </button>
+                </span>
+              )}
+              {selectedCategory && (
+                <span className="inline-flex items-center gap-2 px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">
+                  Categoria: {categories?.find((c: any) => c.id === selectedCategory)?.name}
+                  <button onClick={() => setSelectedCategory(undefined)} className="hover:text-blue-900">
+                    <X size={14} />
+                  </button>
+                </span>
+              )}
+              {minSize && (
+                <span className="inline-flex items-center gap-2 px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">
+                  Mín: {formatFileSize(minSize)}
+                  <button onClick={() => setMinSize(undefined)} className="hover:text-blue-900">
+                    <X size={14} />
+                  </button>
+                </span>
+              )}
+              {maxSize && (
+                <span className="inline-flex items-center gap-2 px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">
+                  Máx: {formatFileSize(maxSize)}
+                  <button onClick={() => setMaxSize(undefined)} className="hover:text-blue-900">
+                    <X size={14} />
+                  </button>
+                </span>
+              )}
+              <button
+                onClick={() => {
+                  setSearchQuery("");
+                  setSelectedCategory(undefined);
+                  setMinSize(undefined);
+                  setMaxSize(undefined);
+                }}
+                className="px-3 py-1 text-sm text-gray-600 hover:text-gray-900 font-medium"
+              >
+                Limpar filtros
+              </button>
+            </div>
+          )}
         </div>
 
+        {/* Documentos */}
         {isDisplayLoading ? (
           <div className="text-center py-12">
             <p className="text-gray-500">Carregando documentos...</p>
           </div>
-        ) : searchQuery.length > 0 ? (
-          searchResults && searchResults.length > 0 ? (
-            <div className="space-y-4">
-              <p className="text-sm text-gray-600 mb-4">Resultados da busca para: <strong>{searchQuery}</strong></p>
-              {searchResults.map((doc: any) => (
-                <DocumentCard key={doc.id} doc={doc} onDownload={handleDownload} formatFileSize={formatFileSize} />
-              ))}
-            </div>
-          ) : (
-            <div className="bg-white rounded-lg border p-12 text-center">
-              <FileText size={48} className="mx-auto text-gray-400 mb-4" />
-              <p className="text-gray-500 text-lg">Nenhum documento encontrado para "{searchQuery}"</p>
-            </div>
-          )
-        ) : Object.keys(documentsByCategory).length > 0 ? (
+        ) : displayDocuments && displayDocuments.length > 0 ? (
           <div className="space-y-4">
             {Object.values(documentsByCategory).map((group: any) => (
               <div key={group.category.id} className="bg-white rounded-lg border shadow-sm overflow-hidden">
@@ -142,7 +260,7 @@ export default function Documents() {
         ) : (
           <div className="bg-white rounded-lg border p-12 text-center">
             <FileText size={48} className="mx-auto text-gray-400 mb-4" />
-            <p className="text-gray-500 text-lg">Nenhum documento disponível no momento.</p>
+            <p className="text-gray-500 text-lg">Nenhum documento encontrado.</p>
           </div>
         )}
       </div>

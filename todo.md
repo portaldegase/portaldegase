@@ -376,3 +376,18 @@
 - [x] Criar componente FeaturedDocuments para Home
 - [x] Integrar FeaturedDocuments na página Home abaixo de Transparência
 - [x] Adicionar botão "Exibir mais documentos" no card
+
+
+## Filtro Avan\u00e7ado de Document## Filtro Avançado de Documentos
+- [x] Criar router tRPC para busca com filtros avançados
+- [x] Adicionar UI de filtros na página pública de documentos
+- [x] Implementar filtro por categoria
+- [x] Implementar filtro por data de publicação
+- [x] Implementar filtro por tamanho de arquivo
+
+## Widget de Documentos Recentes
+- [x] Criar router tRPC para listar documentos recentes
+- [x] Criar componente RecentDocumentsWidget
+- [x] Integrar widget no painel administrativo
+- [x] Exibir últimos 5 documentos enviados
+- [x] Mostrar mais baixados

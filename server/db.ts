@@ -1,4 +1,4 @@
-import { eq, like, or, desc, asc, and, sql, inArray, ilike, gte } from "drizzle-orm";
+import { eq, like, or, desc, asc, and, sql, inArray, ilike, gte, lte, getTableColumns } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import {
   InsertUser, users,
@@ -1184,5 +1184,76 @@ export async function getFeaturedDocuments(limit = 5) {
       eq(documents.isActive, true)
     ))
     .orderBy(desc(documents.createdAt))
+    .limit(limit);
+}
+
+
+export async function searchDocumentsAdvanced(filters: {
+  query?: string;
+  categoryId?: number;
+  minSize?: number;
+  maxSize?: number;
+  startDate?: Date;
+  endDate?: Date;
+}) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const conditions: any[] = [eq(documents.isActive, true)];
+  
+  if (filters.query) {
+    const searchPattern = `%${filters.query}%`;
+    conditions.push(or(
+      ilike(documents.name, searchPattern),
+      ilike(documents.description, searchPattern)
+    ));
+  }
+  
+  if (filters.categoryId) {
+    conditions.push(eq(documents.categoryId, filters.categoryId));
+  }
+  
+  if (filters.minSize !== undefined) {
+    conditions.push(gte(documents.fileSize, filters.minSize));
+  }
+  
+  if (filters.maxSize !== undefined) {
+    conditions.push(lte(documents.fileSize, filters.maxSize));
+  }
+  
+  if (filters.startDate) {
+    conditions.push(gte(documents.createdAt, filters.startDate));
+  }
+  
+  if (filters.endDate) {
+    conditions.push(lte(documents.createdAt, filters.endDate));
+  }
+  
+  return db.select().from(documents)
+    .where(and(...conditions))
+    .orderBy(desc(documents.createdAt));
+}
+
+export async function getRecentDocuments(limit = 5) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return db.select().from(documents)
+    .where(eq(documents.isActive, true))
+    .orderBy(desc(documents.createdAt))
+    .limit(limit);
+}
+
+export async function getMostDownloadedDocuments(limit = 5) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return db.select({
+    ...getTableColumns(documents),
+    downloadCount: sql<number>`(SELECT COUNT(*) FROM ${documentDownloads} WHERE ${documentDownloads.documentId} = ${documents.id})`,
+  })
+    .from(documents)
+    .where(eq(documents.isActive, true))
+    .orderBy(sql`(SELECT COUNT(*) FROM ${documentDownloads} WHERE ${documentDownloads.documentId} = ${documents.id}) DESC`)
     .limit(limit);
 }

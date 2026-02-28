@@ -906,7 +906,17 @@ export const appRouter = router({
         throw new TRPCError({ code: 'FORBIDDEN', message: 'Acesso restrito' });
       }
       return db.updateDocument(input.id, { isFeatured: input.isFeatured });
-    })
+    }),
+    searchAdvanced: publicProcedure.input(z.object({
+      query: z.string().optional(),
+      categoryId: z.number().optional(),
+      minSize: z.number().optional(),
+      maxSize: z.number().optional(),
+      startDate: z.date().optional(),
+      endDate: z.date().optional(),
+    })).query(async ({ input }) => db.searchDocumentsAdvanced(input)),
+    getRecent: publicProcedure.query(async () => db.getRecentDocuments()),
+    getMostDownloaded: publicProcedure.query(async () => db.getMostDownloadedDocuments())
   }),
 
   documentVersions: router({

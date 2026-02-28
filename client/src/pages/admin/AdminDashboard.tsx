@@ -1,5 +1,6 @@
 import { trpc } from "@/lib/trpc";
 import { FileText, Eye, FolderOpen, Video, Building2, BarChart3 } from "lucide-react";
+import RecentDocumentsWidget from "@/components/RecentDocumentsWidget";
 
 export default function AdminDashboard() {
   const { data: postsData } = trpc.posts.list.useQuery({ limit: 5 });
@@ -33,6 +34,11 @@ export default function AdminDashboard() {
             </div>
           </div>
         ))}
+      </div>
+
+      {/* Recent Documents Widget */}
+      <div className="mb-8">
+        <RecentDocumentsWidget />
       </div>
 
       {/* Recent Posts */}
