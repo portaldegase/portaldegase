@@ -391,3 +391,9 @@
 - [x] Integrar widget no painel administrativo
 - [x] Exibir últimos 5 documentos enviados
 - [x] Mostrar mais baixados
+
+
+## Ordenacao de Documentos em Destaque
+- [ ] Adicionar campo de ordem ao schema de documentos
+- [ ] Criar routers tRPC para atualizar ordem
+- [ ] Implementar drag-and-drop em AdminDocuments

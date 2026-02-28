@@ -1257,3 +1257,51 @@ export async function getMostDownloadedDocuments(limit = 5) {
     .orderBy(sql`(SELECT COUNT(*) FROM ${documentDownloads} WHERE ${documentDownloads.documentId} = ${documents.id}) DESC`)
     .limit(limit);
 }
+
+
+// ==================== DOCUMENT ORDER ====================
+export async function updateDocumentOrder(documentId: number, sortOrder: number): Promise<void> {
+  const db = await getDb();
+  if (!db) { console.warn("[Database] Cannot update document order: database not available"); return; }
+  try {
+    await db.update(documents)
+      .set({ sortOrder })
+      .where(eq(documents.id, documentId));
+  } catch (error) {
+    console.error("[Database] Error updating document order:", error);
+    throw error;
+  }
+}
+
+export async function reorderFeaturedDocuments(documentOrders: Array<{ id: number; sortOrder: number }>): Promise<void> {
+  const db = await getDb();
+  if (!db) { console.warn("[Database] Cannot reorder documents: database not available"); return; }
+  try {
+    for (const { id, sortOrder } of documentOrders) {
+      await db.update(documents)
+        .set({ sortOrder })
+        .where(eq(documents.id, id));
+    }
+  } catch (error) {
+    console.error("[Database] Error reordering documents:", error);
+    throw error;
+  }
+}
+
+export async function getFeaturedDocumentsOrdered(limit = 5) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return db.select({
+    ...getTableColumns(documents),
+    category: {
+      id: documentCategories.id,
+      name: documentCategories.name,
+    }
+  })
+    .from(documents)
+    .innerJoin(documentCategories, eq(documents.categoryId, documentCategories.id))
+    .where(and(eq(documents.isFeatured, true), eq(documents.isActive, true)))
+    .orderBy(asc(documents.sortOrder))
+    .limit(limit);
+}

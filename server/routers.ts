@@ -916,7 +916,30 @@ export const appRouter = router({
       endDate: z.date().optional(),
     })).query(async ({ input }) => db.searchDocumentsAdvanced(input)),
     getRecent: publicProcedure.query(async () => db.getRecentDocuments()),
-    getMostDownloaded: publicProcedure.query(async () => db.getMostDownloadedDocuments())
+    getMostDownloaded: publicProcedure.query(async () => db.getMostDownloadedDocuments()),
+    updateOrder: adminProcedure.input(z.object({
+      documentId: z.number(),
+      sortOrder: z.number(),
+    })).mutation(async ({ input, ctx }) => {
+      if (ctx.user.role !== 'admin') {
+        throw new TRPCError({ code: 'FORBIDDEN', message: 'Acesso restrito' });
+      }
+      await db.updateDocumentOrder(input.documentId, input.sortOrder);
+      return { success: true };
+    }),
+    reorderFeatured: adminProcedure.input(z.object({
+      orders: z.array(z.object({
+        id: z.number(),
+        sortOrder: z.number(),
+      })),
+    })).mutation(async ({ input, ctx }) => {
+      if (ctx.user.role !== 'admin') {
+        throw new TRPCError({ code: 'FORBIDDEN', message: 'Acesso restrito' });
+      }
+      await db.reorderFeaturedDocuments(input.orders);
+      return { success: true };
+    }),
+    getFeaturedOrdered: publicProcedure.query(async () => db.getFeaturedDocumentsOrdered())
   }),
 
   documentVersions: router({

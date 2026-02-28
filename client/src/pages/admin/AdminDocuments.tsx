@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Plus, Edit, Trash2, Download, FileText, BarChart3, Star } from "lucide-react";
+import { Plus, Edit, Trash2, Download, FileText, BarChart3, Star, GripVertical } from "lucide-react";
 import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
 import { Link } from "wouter";
@@ -17,6 +17,8 @@ export default function AdminDocuments() {
 
   const [categoryName, setCategoryName] = useState("");
   const [categoryDescription, setCategoryDescription] = useState("");
+  const [draggedItem, setDraggedItem] = useState<number | null>(null);
+  const [showFeaturedReorder, setShowFeaturedReorder] = useState(false);
 
   const utils = trpc.useUtils();
   const { data: documents, isLoading: documentsLoading } = trpc.documents.list.useQuery();
@@ -64,6 +66,16 @@ export default function AdminDocuments() {
       utils.documents.list.invalidate();
       utils.documents.getFeatured.invalidate();
       toast.success("Status de destaque atualizado!");
+    },
+    onError: (e) => toast.error(`Erro: ${e.message}`),
+  });
+
+  const reorderMutation = trpc.documents.reorderFeatured.useMutation({
+    onSuccess: () => {
+      utils.documents.list.invalidate();
+      utils.documents.getFeatured.invalidate();
+      toast.success("Ordem de documentos atualizada!");
+      setShowFeaturedReorder(false);
     },
     onError: (e) => toast.error(`Erro: ${e.message}`),
   });
@@ -261,6 +273,58 @@ export default function AdminDocuments() {
           </div>
         </form>
       )}
+
+      <div className="bg-white rounded-lg border p-5 mb-6">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-bold" style={{ color: "var(--degase-blue-dark)" }}>Documentos em Destaque</h2>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowFeaturedReorder(!showFeaturedReorder)}
+          >
+            {showFeaturedReorder ? "Fechar" : "Reordenar"}
+          </Button>
+        </div>
+        {showFeaturedReorder && documents && (
+          <div className="space-y-2 mb-4">
+            <p className="text-sm text-gray-600 mb-3">Arraste os documentos para reordenar. Clique em Salvar quando terminar.</p>
+            {documents
+              .filter((doc: any) => doc.isFeatured)
+              .sort((a: any, b: any) => (a.sortOrder || 0) - (b.sortOrder || 0))
+              .map((doc: any, index: number) => (
+                <div
+                  key={doc.id}
+                  draggable
+                  onDragStart={() => setDraggedItem(doc.id)}
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={() => {
+                    if (draggedItem && draggedItem !== doc.id) {
+                      const orders = documents
+                        .filter((d: any) => d.isFeatured)
+                        .sort((a: any, b: any) => (a.sortOrder || 0) - (b.sortOrder || 0))
+                        .map((d: any, i: number) => ({
+                          id: d.id === draggedItem ? doc.id : d.id === doc.id ? draggedItem : d.id,
+                          sortOrder: i,
+                        }));
+                      reorderMutation.mutate({ orders });
+                    }
+                  }}
+                  className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border cursor-move hover:bg-gray-100 transition-colors"
+                >
+                  <GripVertical size={18} className="text-gray-400" />
+                  <FileText size={16} className="text-blue-500" />
+                  <div className="flex-1">
+                    <p className="font-medium text-sm">{doc.name}</p>
+                    <p className="text-xs text-gray-500">Ordem: {index + 1}</p>
+                  </div>
+                </div>
+              ))}
+            {documents.filter((doc: any) => doc.isFeatured).length === 0 && (
+              <p className="text-sm text-gray-500 text-center py-4">Nenhum documento em destaque</p>
+            )}
+          </div>
+        )}
+      </div>
 
       {documentsLoading ? (
         <p className="text-gray-500">Carregando documentos...</p>

@@ -120,6 +120,13 @@
       "when": 1772285282784,
       "tag": "0016_lyrical_thor",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "5",
+      "when": 1772287235622,
+      "tag": "0017_faulty_thaddeus_ross",
+      "breakpoints": true
     }
   ]
 }

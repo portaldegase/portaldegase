@@ -437,6 +437,7 @@ export const documents = mysqlTable("documents", {
   uploadedBy: int("uploadedBy").notNull().references(() => users.id, { onDelete: "restrict" }),
   isActive: boolean("isActive").default(true).notNull(),
   isFeatured: boolean("isFeatured").default(false).notNull(), // Destaque na home
+  sortOrder: int("sortOrder").default(0).notNull(), // Ordem de exibição em destaque
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
