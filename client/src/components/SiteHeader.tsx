@@ -4,6 +4,7 @@ import { Search, Menu, X, Eye, Plus, Minus, Instagram, Facebook, Twitter, Youtub
 import { useAccessibility } from "@/contexts/AccessibilityContext";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { AccessibilityPanel } from "./AccessibilityPanel";
+import { DynamicMenu } from "./DynamicMenu";
 import { trpc } from "@/lib/trpc";
 
 export default function SiteHeader() {
@@ -14,6 +15,7 @@ export default function SiteHeader() {
   const [, navigate] = useLocation();
   const { highContrast, toggleHighContrast, increaseFontSize, decreaseFontSize } = useAccessibility();
   const { user, isAuthenticated } = useAuth();
+  const { data: menuItems = [] } = trpc.menu.hierarchy.useQuery();
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -168,40 +170,22 @@ export default function SiteHeader() {
 
       {/* Navigation Menu */}
       {menuOpen && (
-        <nav className="w-full text-white shadow-lg" style={{ backgroundColor: "var(--degase-blue-accent)" }} role="navigation" aria-label="Menu principal">
+        <div className="w-full text-white shadow-lg" style={{ backgroundColor: "var(--degase-blue-accent)" }}>
           <div className="container py-4">
-            <ul className="space-y-1">
-              {[
-                { href: "/", label: "Início" },
-                { href: "/noticias", label: "Notícias" },
-                { href: "/sobre", label: "Sobre o DEGASE" },
-                { href: "/servicos", label: "Serviços" },
-                { href: "/legislacao", label: "Legislação" },
-                { href: "/documentos", label: "Documentos" },
-                { href: "/transparencia", label: "Transparência" },
-                { href: "/unidades", label: "Unidades" },
-                { href: "/contato", label: "Contato" },
-              ].map(item => (
-                <li key={item.href}>
-                  <Link
-                    href={item.href}
-                    onClick={() => setMenuOpen(false)}
-                    className="block px-4 py-2 hover:bg-white/10 rounded-md transition-colors"
-                  >
-                    {item.label}
-                  </Link>
-                </li>
-              ))}
-              {isAuthenticated && (
-                <li className="border-t border-white/20 mt-2 pt-2">
-                  <Link href="/admin" onClick={() => setMenuOpen(false)} className="block px-4 py-2 hover:bg-white/10 rounded-md transition-colors font-medium">
-                    Painel Administrativo
-                  </Link>
-                </li>
-              )}
-            </ul>
+            <DynamicMenu
+              items={menuItems}
+              onItemClick={() => setMenuOpen(false)}
+              isHierarchical={true}
+            />
+            {isAuthenticated && (
+              <div className="border-t border-white/20 mt-4 pt-4">
+                <Link href="/admin" onClick={() => setMenuOpen(false)} className="block px-4 py-2 hover:bg-white/10 rounded-md transition-colors font-medium">
+                  Painel Administrativo
+                </Link>
+              </div>
+            )}
           </div>
-        </nav>
+        </div>
       )}
 
       {/* Accessibility Floating Bar */}
