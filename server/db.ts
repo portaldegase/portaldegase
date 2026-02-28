@@ -1057,10 +1057,19 @@ export async function getDocumentById(id: number) {
 export async function getDocumentsWithCategories() {
   const db = await getDb();
   if (!db) return [];
-  return db.select().from(documents)
+  const results = await db.select({
+    ...getTableColumns(documents),
+    category: {
+      id: documentCategories.id,
+      name: documentCategories.name,
+      description: documentCategories.description,
+    }
+  })
+    .from(documents)
     .innerJoin(documentCategories, eq(documents.categoryId, documentCategories.id))
     .where(and(eq(documents.isActive, true), eq(documentCategories.isActive, true)))
     .orderBy(asc(documentCategories.sortOrder), desc(documents.createdAt));
+  return results;
 }
 
 
@@ -1178,12 +1187,20 @@ export async function getFeaturedDocuments(limit = 5) {
   const db = await getDb();
   if (!db) return [];
   
-  return db.select().from(documents)
+  return db.select({
+    ...getTableColumns(documents),
+    category: {
+      id: documentCategories.id,
+      name: documentCategories.name,
+    }
+  })
+    .from(documents)
+    .leftJoin(documentCategories, eq(documents.categoryId, documentCategories.id))
     .where(and(
       eq(documents.isFeatured, true),
       eq(documents.isActive, true)
     ))
-    .orderBy(desc(documents.createdAt))
+    .orderBy(asc(documents.sortOrder), desc(documents.createdAt))
     .limit(limit);
 }
 

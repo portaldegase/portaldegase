@@ -397,3 +397,9 @@
 - [ ] Adicionar campo de ordem ao schema de documentos
 - [ ] Criar routers tRPC para atualizar ordem
 - [ ] Implementar drag-and-drop em AdminDocuments
+
+
+## Correcoes de Erros
+- [x] Corrigir exibicao de categoria em documentos em destaque (mostrando "Sem Categoria")
+- [x] Corrigir erro ao clicar em "Exibir mais documentos" na pagina publica
+- [x] Corrigir erro ao acessar pagina de documentos no admin
