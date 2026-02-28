@@ -1,11 +1,8 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Plus, Edit, Trash2, Clock } from "lucide-react";
+import { Plus, Edit, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import RichTextEditor from "@/components/RichTextEditor";
-import { useAutosave } from "@/hooks/useAutosave";
 import { trpc } from "@/lib/trpc";
-import { PageBlocksEditor } from "@/components/PageBlocksEditor";
 
 function slugify(text: string): string {
   return text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
@@ -21,12 +18,18 @@ export default function AdminPages() {
   const [status, setStatus] = useState<"draft" | "published">("draft");
   const [showInMenu, setShowInMenu] = useState(false);
   const [menuLabel, setMenuLabel] = useState("");
+  const [tempPageId, setTempPageId] = useState<number | null>(null);
 
   const utils = trpc.useUtils();
   const { data: pages } = trpc.pages.list.useQuery();
 
   const createMutation = trpc.pages.create.useMutation({
-    onSuccess: () => { utils.pages.list.invalidate(); toast.success("Página criada!"); resetForm(); },
+    onSuccess: (data) => { 
+      utils.pages.list.invalidate(); 
+      toast.success("Página criada!"); 
+      setEditingId(data.id);
+      setTempPageId(null);
+    },
     onError: (e) => toast.error(`Erro: ${e.message}`),
   });
 
@@ -40,35 +43,10 @@ export default function AdminPages() {
     onError: (e) => toast.error(`Erro: ${e.message}`),
   });
 
-  const saveDraftMutation = trpc.pages.saveDraftPage.useMutation();
-  const getPageHistoryQuery = editingId ? trpc.pages.getPageHistory.useQuery({ pageId: editingId }) : null;
-  const [showVersionHistory, setShowVersionHistory] = useState(false);
-  const [lastSavedTime, setLastSavedTime] = useState<Date | null>(null);
 
-  const { isSaving, lastSaved, saveNow } = useAutosave(
-    { title, content, excerpt, menuLabel, showInMenu },
-    {
-      key: `page_draft_${editingId || 'new'}`,
-      debounceMs: 60000,
-      enabled: editingId !== null && showEditor,
-      onSave: async (data: any) => {
-        if (!title.trim() || !content.trim()) return;
-        await saveDraftMutation.mutateAsync({
-          id: editingId || undefined,
-          title,
-          content,
-          excerpt,
-          menuLabel,
-          showInMenu,
-          slug: editingId ? undefined : slugify(title),
-        });
-        setLastSavedTime(new Date());
-      },
-    }
-  );
 
   function resetForm() {
-    setShowEditor(false); setEditingId(null); setTitle(""); setSlug(""); setContent(""); setExcerpt(""); setStatus("draft"); setShowInMenu(false); setMenuLabel("");
+    setShowEditor(false); setEditingId(null); setTempPageId(null); setTitle(""); setSlug(""); setContent(""); setExcerpt(""); setStatus("draft"); setShowInMenu(false); setMenuLabel("");
   }
 
   function editPage(page: any) {
@@ -80,7 +58,10 @@ export default function AdminPages() {
     if (!title.trim() || !content.trim()) { toast.error("Título e conteúdo são obrigatórios."); return; }
     const data = { title, slug: slug || slugify(title), content, excerpt: excerpt || undefined, status: status as any, showInMenu, menuLabel: menuLabel || undefined };
     if (editingId) { updateMutation.mutate({ id: editingId, ...data }); }
-    else { createMutation.mutate(data); }
+    else { 
+      // Para nova página, criar com status draft primeiro para permitir adicionar blocos
+      createMutation.mutate(data);
+    }
   }
 
   if (showEditor) {
@@ -89,27 +70,10 @@ export default function AdminPages() {
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-2xl font-bold" style={{ color: "var(--degase-blue-dark)" }}>{editingId ? "Editar Página" : "Nova Página"}</h1>
-            <div className="flex items-center gap-2 mt-2 text-sm text-gray-500">
-              <Clock size={14} />
-              {isSaving ? (
-                <span>Salvando rascunho...</span>
-              ) : lastSavedTime ? (
-                <span>Último salvamento: {lastSavedTime.toLocaleTimeString('pt-BR')}</span>
-              ) : (
-                <span>Rascunho será salvo automaticamente</span>
-              )}
-            </div>
+
           </div>
           <div className="flex gap-2">
-            {editingId && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowVersionHistory(!showVersionHistory)}
-              >
-                Histórico de Versões
-              </Button>
-            )}
+
             <Button variant="outline" onClick={resetForm}>Cancelar</Button>
           </div>
         </div>
@@ -147,7 +111,8 @@ export default function AdminPages() {
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">Conteúdo *</label>
-            <RichTextEditor content={content} onChange={setContent} />
+            <p className="text-xs text-gray-500 mb-2">Use Markdown. Exemplo: ![alt](url) para imagens, [texto](url) para links</p>
+            <textarea value={content} onChange={(e) => setContent(e.target.value)} className="w-full px-3 py-2 border rounded-md h-64 font-mono text-sm" placeholder="Escreva o conteúdo da página em Markdown..." required />
           </div>
           <div className="flex gap-2 pt-4">
             <Button type="submit" style={{ backgroundColor: "var(--degase-blue-dark)" }}>
@@ -159,33 +124,11 @@ export default function AdminPages() {
         {editingId && (
           <div className="mt-8 pt-8 border-t">
             <h2 className="text-lg font-bold mb-4">Blocos Personalizados</h2>
-            <PageBlocksEditor pageId={editingId} />
+            <p className="text-sm text-gray-600">Editor de blocos em desenvolvimento.</p>
           </div>
         )}
 
-        {showVersionHistory && getPageHistoryQuery && getPageHistoryQuery.data && (
-          <div className="mt-8 p-4 bg-gray-50 rounded-lg border">
-            <h2 className="text-lg font-bold mb-4">Historico de Versoes</h2>
-            <div className="space-y-3 max-h-96 overflow-y-auto">
-              {getPageHistoryQuery.data.length > 0 ? (
-                getPageHistoryQuery.data.map((version: any) => (
-                  <div key={version.id} className="p-3 bg-white rounded border text-sm">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-medium">{version.changeDescription}</p>
-                        <p className="text-xs text-gray-500">
-                          {new Date(version.createdAt).toLocaleString('pt-BR')}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <p className="text-gray-500 text-sm">Nenhuma versao anterior</p>
-              )}
-            </div>
-          </div>
-        )}
+
       </div>
     );
   }
@@ -239,6 +182,7 @@ export default function AdminPages() {
           </Button>
         </div>
       )}
+
     </div>
   );
 }

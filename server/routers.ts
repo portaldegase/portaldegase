@@ -5,6 +5,8 @@ import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import * as db from "./db";
+import { eq } from "drizzle-orm";
+import { mediaLibrary } from "../drizzle/schema";
 
 const adminProcedure = protectedProcedure.use(({ ctx, next }) => {
   if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN", message: "Acesso restrito a administradores" });
@@ -1119,7 +1121,14 @@ export const appRouter = router({
       const trend = await db.getEngagementTrend(input.range);
       return trend;
     }),
+   }),
+  media: router({
+    listImages: publicProcedure.query(async () => {
+      return [];
+    }),
+    listDocuments: publicProcedure.query(async () => {
+      return [];
+    }),
   }),
 });
-
 export type AppRouter = typeof appRouter;

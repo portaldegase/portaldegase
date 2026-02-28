@@ -26,7 +26,7 @@ export function useAutosave<T>(
   // Atualizar referência de dados
   useEffect(() => {
     dataRef.current = data;
-  }, [data]);
+  }, []);
 
   // Função de salvamento
   const save = useCallback(async () => {
@@ -77,7 +77,7 @@ export function useAutosave<T>(
         clearTimeout(timeoutRef.current);
       }
     };
-  }, [data, debounceMs, enabled, save]);
+  }, [debounceMs, enabled, save]);
 
   // Recuperar rascunho do localStorage
   const loadDraft = useCallback((): T | null => {

@@ -1,0 +1,9 @@
+{
+  "query": "DELETE FROM pages WHERE title = 'Página com Cards';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4Ji8EPjXd3ypEXM.root --database JX8wsWcc9SoDW6P2Z8aZjA --execute DELETE FROM pages WHERE title = 'Página com Cards';",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 132
+}
