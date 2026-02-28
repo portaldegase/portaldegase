@@ -16,7 +16,7 @@ export function useAutosave<T>(
   data: T,
   options: UseAutosaveOptions
 ) {
-  const { key, debounceMs = 3000, onSave, onError } = options;
+  const { key, debounceMs = 60000, onSave, onError } = options;
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const timeoutRef = useRef<NodeJS.Timeout>();

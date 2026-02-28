@@ -439,3 +439,9 @@
 - [ ] Controle de ordenação e hierarquia (pai/filho)
 - [ ] Renderizar menu dinâmico no header
 - [ ] Integrar no menu administrativo
+
+
+## Correcoes Urgentes
+- [x] Corrigir erro na pagina admin/documentos
+- [x] Adicionar opcao de inserir cards em admin/paginas
+- [x] Alterar intervalo de salvamento automatico de 3 para 60 segundos

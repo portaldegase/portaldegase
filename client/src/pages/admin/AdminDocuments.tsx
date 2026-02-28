@@ -154,6 +154,7 @@ export default function AdminDocuments() {
   }
 
   const documentsByCategory = documents?.reduce((acc, item: any) => {
+    if (!item.document_categories) return acc;
     const categoryId = item.document_categories.id;
     if (!acc[categoryId]) {
       acc[categoryId] = {
@@ -161,7 +162,7 @@ export default function AdminDocuments() {
         documents: [],
       };
     }
-    acc[categoryId].documents.push(item.documents);
+    acc[categoryId].documents.push(item);
     return acc;
   }, {} as Record<number, any>) || {};
 
