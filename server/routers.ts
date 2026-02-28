@@ -1038,6 +1038,61 @@ export const appRouter = router({
       return db.deleteImageFromBank(input.id);
     }),
   }),
+
+  menu: router({
+    list: publicProcedure.query(async () => db.getMenuItems()),
+    hierarchy: publicProcedure.query(async () => db.getMenuItemsHierarchy()),
+    create: protectedProcedure.input(z.object({
+      label: z.string().min(1),
+      linkType: z.enum(["internal", "external"]),
+      internalPageId: z.number().optional(),
+      externalUrl: z.string().optional(),
+      parentId: z.number().optional(),
+      sortOrder: z.number().default(0),
+      openInNewTab: z.boolean().default(false),
+    })).mutation(async ({ input, ctx }) => {
+      if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+      return db.createMenuItem({
+        label: input.label,
+        linkType: input.linkType,
+        internalPageId: input.internalPageId,
+        externalUrl: input.externalUrl,
+        parentId: input.parentId || null,
+        sortOrder: input.sortOrder,
+        openInNewTab: input.openInNewTab,
+        isActive: true,
+      });
+    }),
+    update: protectedProcedure.input(z.object({
+      id: z.number(),
+      label: z.string().optional(),
+      linkType: z.enum(["internal", "external"]).optional(),
+      internalPageId: z.number().optional(),
+      externalUrl: z.string().optional(),
+      parentId: z.number().optional(),
+      sortOrder: z.number().optional(),
+      openInNewTab: z.boolean().optional(),
+      isActive: z.boolean().optional(),
+    })).mutation(async ({ input, ctx }) => {
+      if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+      const { id, ...data } = input;
+      return db.updateMenuItem(id, data);
+    }),
+    delete: protectedProcedure.input(z.object({ id: z.number() })).mutation(async ({ input, ctx }) => {
+      if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+      return db.deleteMenuItem(input.id);
+    }),
+    reorder: protectedProcedure.input(z.object({
+      items: z.array(z.object({
+        id: z.number(),
+        parentId: z.number().nullable(),
+        sortOrder: z.number(),
+      })),
+    })).mutation(async ({ input, ctx }) => {
+      if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+      return db.updateMenuItemOrder(input.items);
+    }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;

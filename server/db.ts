@@ -28,6 +28,7 @@ import {
   pageBlocks, InsertPageBlock,
   pageBlockItems, InsertPageBlockItem,
   imagesBank, InsertImagesBank,
+  menuItems, InsertMenuItem,
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -1428,4 +1429,68 @@ export async function deleteImageFromBank(id: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   return db.delete(imagesBank).where(eq(imagesBank.id, id));
+}
+
+
+// Menu Items
+export async function getMenuItems() {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  return await db.select().from(menuItems).orderBy(menuItems.parentId, menuItems.sortOrder);
+}
+
+export async function getMenuItemsHierarchy() {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const items = await db.select().from(menuItems).orderBy(menuItems.parentId, menuItems.sortOrder);
+  
+  const itemsMap = new Map();
+  const rootItems: any[] = [];
+
+  items.forEach(item => {
+    itemsMap.set(item.id, { ...item, children: [] });
+  });
+
+  items.forEach(item => {
+    if (item.parentId === null) {
+      rootItems.push(itemsMap.get(item.id));
+    } else {
+      const parent = itemsMap.get(item.parentId);
+      if (parent) {
+        parent.children.push(itemsMap.get(item.id));
+      }
+    }
+  });
+
+  return rootItems;
+}
+
+export async function createMenuItem(data: InsertMenuItem) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.insert(menuItems).values(data);
+  return result;
+}
+
+export async function updateMenuItem(id: number, data: Partial<InsertMenuItem>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(menuItems).set(data).where(eq(menuItems.id, id));
+  return await db.select().from(menuItems).where(eq(menuItems.id, id)).limit(1);
+}
+
+export async function deleteMenuItem(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.delete(menuItems).where(eq(menuItems.id, id));
+}
+
+export async function updateMenuItemOrder(items: Array<{ id: number; parentId: number | null; sortOrder: number }>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  for (const item of items) {
+    await db.update(menuItems)
+      .set({ parentId: item.parentId, sortOrder: item.sortOrder })
+      .where(eq(menuItems.id, item.id));
+  }
 }

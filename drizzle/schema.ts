@@ -553,3 +553,24 @@ export const imagesBank = mysqlTable("images_bank", {
 
 export type ImagesBank = typeof imagesBank.$inferSelect;
 export type InsertImagesBank = typeof imagesBank.$inferInsert;
+
+
+/**
+ * Menu Items - Itens do menu do site com suporte a hierarquia
+ */
+export const menuItems = mysqlTable("menu_items", {
+  id: int("id").autoincrement().primaryKey(),
+  label: varchar("label", { length: 255 }).notNull(),
+  linkType: mysqlEnum("linkType", ["internal", "external"]).notNull(),
+  internalPageId: int("internalPageId").references(() => pages.id, { onDelete: "set null" }),
+  externalUrl: varchar("externalUrl", { length: 1024 }),
+  parentId: int("parentId").references(() => menuItems.id, { onDelete: "cascade" }),
+  sortOrder: int("sortOrder").default(0).notNull(),
+  isActive: boolean("isActive").default(true).notNull(),
+  openInNewTab: boolean("openInNewTab").default(false).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type MenuItem = typeof menuItems.$inferSelect;
+export type InsertMenuItem = typeof menuItems.$inferInsert;

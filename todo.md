@@ -417,3 +417,25 @@
 - [x] Implementar routers tRPC para CRUD de blocos
 - [x] Criar interface de edição de blocos em AdminPages
 - [x] Implementar renderização de blocos na página pública
+
+
+## Seletor de Imagens do Banco para Blocos
+- [ ] Criar router tRPC para listar imagens do banco
+- [ ] Implementar componente ImageSelector para seleção
+- [ ] Integrar seletor no editor de blocos
+- [ ] Exibir preview de imagens selecionadas
+
+## Templates de Página Pré-configurados
+- [ ] Criar schema para templates de página
+- [ ] Implementar routers tRPC para CRUD de templates
+- [ ] Criar interface de seleção de templates ao criar página
+- [ ] Implementar blocos pré-montados em templates
+
+## Sistema de Gerenciamento de Menu
+- [ ] Criar schema para itens de menu com suporte a hierarquia
+- [ ] Implementar routers tRPC para CRUD de menu
+- [ ] Criar interface AdminMenu.tsx com drag-and-drop
+- [ ] Suporte a links internos (páginas) e externos
+- [ ] Controle de ordenação e hierarquia (pai/filho)
+- [ ] Renderizar menu dinâmico no header
+- [ ] Integrar no menu administrativo

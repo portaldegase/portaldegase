@@ -4,7 +4,7 @@ import { getLoginUrl } from "@/const";
 import {
   LayoutDashboard, FileText, FolderOpen, BookOpen,
   Image, Video, Building2, Shield, Settings, LogOut,
-  Menu, X, ArrowLeft, File
+  Menu, X, ArrowLeft, File, List
 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -19,6 +19,7 @@ const navItems = [
   { href: "/admin/servicos", label: "Serviços", icon: Building2 },
   { href: "/admin/servicos/analytics", label: "Analytics de Serviços", icon: Building2 },
   { href: "/admin/documentos", label: "Documentos", icon: File },
+  { href: "/admin/menu", label: "Menu", icon: List },
   { href: "/admin/unidades", label: "Unidades", icon: Building2 },
   { href: "/admin/transparencia", label: "Transparência", icon: Shield },
   { href: "/admin/usuarios", label: "Usuários", icon: Shield },
