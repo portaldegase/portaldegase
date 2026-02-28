@@ -436,6 +436,7 @@ export const documents = mysqlTable("documents", {
   mimeType: varchar("mimeType", { length: 100 }).notNull(),
   uploadedBy: int("uploadedBy").notNull().references(() => users.id, { onDelete: "restrict" }),
   isActive: boolean("isActive").default(true).notNull(),
+  isFeatured: boolean("isFeatured").default(false).notNull(), // Destaque na home
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });

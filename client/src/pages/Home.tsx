@@ -4,6 +4,7 @@ import { ArrowRight, Play, Building2, FileText, Users, Scale, DollarSign, HelpCi
 import { Button } from "@/components/ui/button";
 import { useMemo, useState, useEffect } from "react";
 import ServicesSection from "@/components/ServicesSection";
+import FeaturedDocuments from "@/components/FeaturedDocuments";
 
 function BannerSection() {
   const { data: banners } = trpc.banners.list.useQuery({ activeOnly: true });
@@ -395,6 +396,7 @@ export default function Home() {
       <ServicesSection />
       <VideosSection />
       <TransparencySection />
+      <FeaturedDocuments />
       <UnitsSection />
     </main>
   );

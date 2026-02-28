@@ -1172,3 +1172,17 @@ export async function searchDocuments(query: string) {
     ))
     .orderBy(desc(documents.createdAt));
 }
+
+
+export async function getFeaturedDocuments(limit = 5) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return db.select().from(documents)
+    .where(and(
+      eq(documents.isFeatured, true),
+      eq(documents.isActive, true)
+    ))
+    .orderBy(desc(documents.createdAt))
+    .limit(limit);
+}

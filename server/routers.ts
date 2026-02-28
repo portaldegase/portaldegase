@@ -900,6 +900,13 @@ export const appRouter = router({
     }),
     getDownloadStats: adminProcedure.query(async () => db.getAllDocumentDownloadStats()),
     getDocumentStats: adminProcedure.input(z.object({ documentId: z.number() })).query(async ({ input }) => db.getDocumentDownloadStats(input.documentId)),
+    getFeatured: publicProcedure.query(async () => db.getFeaturedDocuments()),
+    toggleFeatured: adminProcedure.input(z.object({ id: z.number(), isFeatured: z.boolean() })).mutation(async ({ input, ctx }) => {
+      if (ctx.user.role !== 'admin') {
+        throw new TRPCError({ code: 'FORBIDDEN', message: 'Acesso restrito' });
+      }
+      return db.updateDocument(input.id, { isFeatured: input.isFeatured });
+    })
   }),
 
   documentVersions: router({

@@ -1,0 +1,1 @@
+ALTER TABLE `documents` ADD `isFeatured` boolean DEFAULT false NOT NULL;

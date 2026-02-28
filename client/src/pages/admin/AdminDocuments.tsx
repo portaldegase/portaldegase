@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Plus, Edit, Trash2, Download, FileText, BarChart3 } from "lucide-react";
+import { Plus, Edit, Trash2, Download, FileText, BarChart3, Star } from "lucide-react";
 import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
 import { Link } from "wouter";
@@ -55,6 +55,15 @@ export default function AdminDocuments() {
     onSuccess: () => {
       utils.documentCategories.list.invalidate();
       toast.success("Categoria deletada!");
+    },
+    onError: (e) => toast.error(`Erro: ${e.message}`),
+  });
+
+  const toggleFeaturedMutation = trpc.documents.toggleFeatured.useMutation({
+    onSuccess: () => {
+      utils.documents.list.invalidate();
+      utils.documents.getFeatured.invalidate();
+      toast.success("Status de destaque atualizado!");
     },
     onError: (e) => toast.error(`Erro: ${e.message}`),
   });
@@ -276,6 +285,13 @@ export default function AdminDocuments() {
                       </div>
                     </div>
                     <div className="flex gap-2">
+                      <button
+                        onClick={() => toggleFeaturedMutation.mutate({ id: doc.id, isFeatured: !doc.isFeatured })}
+                        className={`p-1.5 rounded transition-colors ${doc.isFeatured ? "bg-yellow-100 text-yellow-600" : "hover:bg-yellow-100 text-gray-400 hover:text-yellow-600"}`}
+                        title={doc.isFeatured ? "Remover de destaque" : "Adicionar a destaque"}
+                      >
+                        <Star size={16} fill={doc.isFeatured ? "currentColor" : "none"} />
+                      </button>
                       <a href={doc.fileUrl} download className="p-1.5 hover:bg-blue-100 rounded text-blue-600">
                         <Download size={16} />
                       </a>

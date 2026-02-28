@@ -367,3 +367,12 @@
 - [ ] Permitir upload de novas versões
 - [ ] Manter histórico de versões
 - [ ] Exibir versões disponíveis para download
+
+
+## Documentos em Destaque na Home
+- [x] Adicionar campo isFeatured ao schema de documentos
+- [x] Criar routers tRPC para listar documentos em destaque
+- [x] Adicionar UI de destaque em AdminDocuments
+- [x] Criar componente FeaturedDocuments para Home
+- [x] Integrar FeaturedDocuments na página Home abaixo de Transparência
+- [x] Adicionar botão "Exibir mais documentos" no card
