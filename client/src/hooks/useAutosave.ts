@@ -4,6 +4,7 @@ import { toast } from "sonner";
 interface UseAutosaveOptions {
   key: string;
   debounceMs?: number;
+  enabled?: boolean;
   onSave?: (data: unknown) => Promise<void>;
   onError?: (error: Error) => void;
 }
@@ -16,7 +17,7 @@ export function useAutosave<T>(
   data: T,
   options: UseAutosaveOptions
 ) {
-  const { key, debounceMs = 60000, onSave, onError } = options;
+  const { key, debounceMs = 60000, enabled = true, onSave, onError } = options;
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const timeoutRef = useRef<NodeJS.Timeout>();
@@ -53,6 +54,13 @@ export function useAutosave<T>(
 
   // Configurar debounce
   useEffect(() => {
+    if (!enabled) {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+      return;
+    }
+
     // Limpar timeout anterior
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
@@ -69,7 +77,7 @@ export function useAutosave<T>(
         clearTimeout(timeoutRef.current);
       }
     };
-  }, [data, debounceMs, save]);
+  }, [data, debounceMs, enabled, save]);
 
   // Recuperar rascunho do localStorage
   const loadDraft = useCallback((): T | null => {

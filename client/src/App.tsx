@@ -107,6 +107,8 @@ function Router() {
       <Route path="/admin/configuracoes">{() => <AdminPage component={AdminSettings} />}</Route>
       <Route path="/admin/documentos">{() => <AdminPage component={AdminDocuments} />}</Route>
       <Route path="/admin/documentos/estatisticas">{() => <AdminPage component={AdminDocumentStats} />}</Route>
+      <Route path="/admin/documents">{() => <AdminPage component={AdminDocuments} />}</Route>
+      <Route path="/admin/documents/stats">{() => <AdminPage component={AdminDocumentStats} />}</Route>
       <Route path="/admin/menu">{() => <AdminPage component={AdminMenu} />}</Route>
 
       {/* 404 */}

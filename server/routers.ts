@@ -838,7 +838,13 @@ export const appRouter = router({
   }),
 
   documents: router({
-    list: publicProcedure.query(async () => db.getDocumentsWithCategories()),
+    list: publicProcedure.query(async () => {
+      const docs = await db.getDocumentsWithCategories();
+      return docs.map((doc: any) => ({
+        ...doc,
+        document_categories: doc.category
+      }));
+    }),
     listByCategory: publicProcedure.input(z.object({ categoryId: z.number() })).query(async ({ input }) => db.listDocumentsByCategory(input.categoryId)),
     create: protectedProcedure.input(z.object({
       name: z.string().min(1),
@@ -1091,6 +1097,27 @@ export const appRouter = router({
     })).mutation(async ({ input, ctx }) => {
       if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
       return db.updateMenuItemOrder(input.items);
+    }),
+  }),
+
+  analytics: router({
+    getMetrics: publicProcedure.input(z.object({
+      range: z.enum(["7days", "30days", "90days", "all"]).default("30days"),
+    })).query(async ({ input }) => {
+      const metrics = await db.getAnalyticsMetrics(input.range);
+      return metrics;
+    }),
+    getTopPosts: publicProcedure.input(z.object({
+      limit: z.number().default(10),
+    })).query(async ({ input }) => {
+      const posts = await db.getTopPostsByViews(input.limit);
+      return posts;
+    }),
+    getEngagementTrend: publicProcedure.input(z.object({
+      range: z.enum(["7days", "30days", "90days", "all"]).default("30days"),
+    })).query(async ({ input }) => {
+      const trend = await db.getEngagementTrend(input.range);
+      return trend;
     }),
   }),
 });

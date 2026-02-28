@@ -445,3 +445,12 @@
 - [x] Corrigir erro na pagina admin/documentos
 - [x] Adicionar opcao de inserir cards em admin/paginas
 - [x] Alterar intervalo de salvamento automatico de 3 para 60 segundos
+
+
+## Problemas Criticos a Corrigir
+- [ ] admin/documentos - documentos nao exibindo mesmo com upload realizado
+- [ ] admin/documents/stats - erro 404
+- [ ] admin/documents - erro 404  
+- [ ] admin/paginas - cards nao aparecem e autosave rodando antes de clicar
+- [ ] admin/menu - erro inesperado
+- [ ] admin/servicos/analytics - acessos nao sendo contabilizados

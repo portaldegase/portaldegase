@@ -564,7 +564,7 @@ export const menuItems = mysqlTable("menu_items", {
   linkType: mysqlEnum("linkType", ["internal", "external"]).notNull(),
   internalPageId: int("internalPageId").references(() => pages.id, { onDelete: "set null" }),
   externalUrl: varchar("externalUrl", { length: 1024 }),
-  parentId: int("parentId").references(() => menuItems.id, { onDelete: "cascade" }),
+  parentId: int("parentId").references((): any => menuItems.id, { onDelete: "cascade" }),
   sortOrder: int("sortOrder").default(0).notNull(),
   isActive: boolean("isActive").default(true).notNull(),
   openInNewTab: boolean("openInNewTab").default(false).notNull(),
@@ -573,4 +573,5 @@ export const menuItems = mysqlTable("menu_items", {
 });
 
 export type MenuItem = typeof menuItems.$inferSelect;
+export type MenuItemInsert = typeof menuItems.$inferInsert;
 export type InsertMenuItem = typeof menuItems.$inferInsert;

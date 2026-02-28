@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { Search, Menu, X, Eye, Plus, Minus, Instagram, Facebook, Twitter, Youtube, Settings } from "lucide-react";
+import { Search, Menu, X, Eye, Plus, Minus, Instagram, Facebook, Twitter, Youtube, Settings, ChevronDown } from "lucide-react";
 import { useAccessibility } from "@/contexts/AccessibilityContext";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { AccessibilityPanel } from "./AccessibilityPanel";
+import { trpc } from "@/lib/trpc";
 
 export default function SiteHeader() {
   const [menuOpen, setMenuOpen] = useState(false);

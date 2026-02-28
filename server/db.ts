@@ -1494,3 +1494,84 @@ export async function updateMenuItemOrder(items: Array<{ id: number; parentId: n
       .where(eq(menuItems.id, item.id));
   }
 }
+
+
+// ==================== ANALYTICS ====================
+
+export async function getAnalyticsMetrics(range: "7days" | "30days" | "90days" | "all") {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const now = new Date();
+  let startDate = new Date();
+  
+  if (range === "7days") startDate.setDate(now.getDate() - 7);
+  else if (range === "30days") startDate.setDate(now.getDate() - 30);
+  else if (range === "90days") startDate.setDate(now.getDate() - 90);
+  else startDate = new Date(0);
+  
+  // Get service analytics
+  const serviceAnalyticsData = await db
+    .select()
+    .from(serviceAnalytics)
+    .where(range === "all" ? undefined : gte(serviceAnalytics.createdAt, startDate));
+  
+  const totalClicks = serviceAnalyticsData.reduce((sum, item) => sum + (item.clickCount || 0), 0);
+  
+  return {
+    totalViews: totalClicks || 0,
+    totalClicks: totalClicks || 0,
+    viewsGrowth: 12, // Placeholder
+    clicksGrowth: 8, // Placeholder
+    averageEngagement: totalClicks > 0 ? 5 : 0,
+  };
+}
+
+export async function getTopPostsByViews(limit: number = 10) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const topServices = await db
+    .select({
+      id: services.id,
+      title: services.name,
+      clicks: sql<number>`COALESCE(SUM(${serviceAnalytics.clickCount}), 0)`,
+    })
+    .from(services)
+    .leftJoin(serviceAnalytics, eq(services.id, serviceAnalytics.serviceId))
+    .groupBy(services.id, services.name)
+    .orderBy(desc(sql<number>`COALESCE(SUM(${serviceAnalytics.clickCount}), 0)`))
+    .limit(limit);
+  
+  return topServices;
+}
+
+export async function getEngagementTrend(range: "7days" | "30days" | "90days" | "all") {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const now = new Date();
+  let startDate = new Date();
+  
+  if (range === "7days") startDate.setDate(now.getDate() - 7);
+  else if (range === "30days") startDate.setDate(now.getDate() - 30);
+  else if (range === "90days") startDate.setDate(now.getDate() - 90);
+  else startDate = new Date(0);
+  
+  const data = await db
+    .select({
+      date: sql<string>`DATE(${serviceAnalytics.createdAt})`,
+      clicks: sql<number>`COALESCE(SUM(${serviceAnalytics.clickCount}), 0)`,
+    })
+    .from(serviceAnalytics)
+    .where(range === "all" ? undefined : gte(serviceAnalytics.createdAt, startDate))
+    .groupBy(sql<string>`DATE(${serviceAnalytics.createdAt})`)
+    .orderBy(asc(sql<string>`DATE(${serviceAnalytics.createdAt})`))
+  
+  return data.map(item => ({
+    date: item.date || new Date().toISOString().split('T')[0],
+    views: item.clicks || 0,
+    clicks: item.clicks || 0,
+  }));
+}
+

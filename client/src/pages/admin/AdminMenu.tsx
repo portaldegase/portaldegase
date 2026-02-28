@@ -247,7 +247,6 @@ export default function AdminMenu() {
                   <SelectValue placeholder="Nenhum (item principal)" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Nenhum (item principal)</SelectItem>
                   {menuQuery.data?.map((item: any) => (
                     <SelectItem key={item.id} value={item.id.toString()}>
                       {item.label}

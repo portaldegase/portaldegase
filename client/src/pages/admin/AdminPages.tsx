@@ -49,7 +49,8 @@ export default function AdminPages() {
     { title, content, excerpt, menuLabel, showInMenu },
     {
       key: `page_draft_${editingId || 'new'}`,
-      debounceMs: 3000,
+      debounceMs: 60000,
+      enabled: editingId !== null && showEditor,
       onSave: async (data: any) => {
         if (!title.trim() || !content.trim()) return;
         await saveDraftMutation.mutateAsync({
