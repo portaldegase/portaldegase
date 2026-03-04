@@ -1,21 +1,5 @@
 # DEGASE CMS - Project TODO
 
-## Instalação e Configuração (Manus)
-- [x] Clonar repositório do GitHub
-- [x] Instalar dependências (pnpm)
-- [x] Configurar banco de dados MySQL local
-- [x] Executar migrações do Drizzle
-- [x] Configurar variáveis de ambiente (.env)
-- [x] Iniciar servidor de desenvolvimento
-- [x] Expor porta para acesso público
-- [x] Build de produção do frontend e backend
-- [x] Configuração de persistência do MySQL
-- [x] Implementação do PM2 para gerenciamento de processos
-- [x] Configuração de inicialização automática (startup script)
-- [x] Monitoramento de logs configurado
-
-
-
 ## Banco de Dados e Schema
 - [x] Schema de categorias (notícias, comunicados, legislação, páginas)
 - [x] Schema de posts/conteúdo com suporte WYSIWYG
